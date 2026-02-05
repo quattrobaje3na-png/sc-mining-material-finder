@@ -27,8 +27,8 @@
 </head>
 <body>
     <div class="terminal-header">
-        <h3>> SECTOR_ANALYSIS_v20.11</h3>
-        <p id="status">[LINK: ONLINE // FULL_SCAN_ENABLED]</p>
+        <h3>> SECTOR_ANALYSIS_v21.0</h3>
+        <p id="status">[LINK: ONLINE // UNFILTERED_ACCESS]</p>
     </div>
 
     <label>Region_Selection</label>
@@ -62,7 +62,7 @@
 
             fetch(DATA_URL).then(res => res.json()).then(data => {
                 oreData = data;
-                statusMsg.innerText = "[LINK: ONLINE // DATA_STREAM_READY]";
+                statusMsg.innerText = "[LINK: ONLINE // RAW_DATA_ACCESSED]";
             }).catch(e => { statusMsg.innerText = "[LINK: ERROR]"; });
 
             scanBtn.onclick = function() {
@@ -76,23 +76,13 @@
                 for (let loc in oreData) {
                     const locU = loc.toUpperCase();
                     
-                    // Filter by System
+                    // SYSTEM FILTER (Stanton vs Pyro vs Nyx)
                     const isPyro = locU.includes('PYR') || locU.includes('RAB-') || locU.includes('RMB-') || locU.includes('AKIRO') || locU.includes('BLOOM') || locU.includes('PATCH');
                     const isNyx = locU.includes('NYX') || locU.includes('GLACIUM');
                     
                     if (system === "PYRO" && !isPyro) continue;
                     if (system === "NYX" && !isNyx) continue;
                     if (system === "STANTON" && (isPyro || isNyx)) continue;
-
-                    // Broad Filter: Include all Moons, Belts, Halos, Bases, and named Pyro points
-                    const isValid = locU.includes('MOON') || locU.includes('BELT') || locU.includes('HALO') || 
-                                    locU.includes('LAGRANGE') || locU.includes('BASE') || locU.includes('ZONE') ||
-                                    locU.includes('AKIRO') || locU.includes('BLOOM') || locU.includes('RAB-') || 
-                                    locU.includes('RMB-') || locU.includes('PATCH') || locU.includes('LEVSKI') ||
-                                    // Protect core Stanton moons that might be missing tags
-                                    ['CELLIN','YELA','DAYMAR','LYRIA','WALA','MAGDA','ARIAL','ABERDEEN','ITA'].some(m => locU.includes(m));
-
-                    if (!isValid) continue;
 
                     let locationOres = [];
                     let highProb = 0;
@@ -104,6 +94,7 @@
                         }
                     });
 
+                    // If it has ANY of the ores we want, show it. NO OTHER FILTERS.
                     if (locationOres.length > 0) {
                         matches.push({ name: cleanName(loc), ores: locationOres, sortVal: highProb });
                     }
