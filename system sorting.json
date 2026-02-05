@@ -32,9 +32,15 @@
       "RMB-MUGG", "RMB-KIFF", "RMB-YEAD", "RMB-LANX", "RMB-VERD", "RMB-FLAG",
       "RMB-BORS", "RMB-KYUS"
     ],
-    "Nyx": [
-      "SAVRILIUM",
-      "GLACIER_BELT"
+   "Nyx": [
+    "GLACIUM",
+    "NYX_GATEWAY",
+    "DELAMAR",
+    "NYX_L1",
+    "NYX_L2",
+    "NYX_L3"
+]
     ]
   }
 }
+
