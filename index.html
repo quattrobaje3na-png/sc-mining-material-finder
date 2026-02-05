@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v29.4</h3>
+        <h3>> INTEL_v29.5</h3>
         <p id="status">ESTABLISHING DATA LINK...</p>
     </div>
 
@@ -64,21 +64,20 @@
         let oreData, sysGroups, refMapping;
         const statusText = document.getElementById('status');
         
-        // Using raw.githubusercontent.com for data access
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Added cache: "no-store" to bypass browser caching issues
+        // Added specific URI encoding for the filename with a space
         Promise.all([
             fetch(BASE_URL + 'OreLocations.json', {cache: "no-store"}).then(r => r.json()),
-            fetch(BASE_URL + 'system_sorting.json', {cache: "no-store"}).then(r => r.json()),
+            fetch(BASE_URL + 'system%20sorting.json', {cache: "no-store"}).then(r => r.json()),
             fetch(BASE_URL + 'reference.json', {cache: "no-store"}).then(r => r.json())
         ]).then(responses => {
             [oreData, sysGroups, refMapping] = responses;
             statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
         }).catch(err => {
-            statusText.innerText = "SYNC_ERROR: VERIFY FILENAMES IN REPOSITORY";
+            statusText.innerText = "SYNC_ERROR: UNABLE TO REACH REPOSITORY FILES";
             statusText.style.color = "red";
-            console.error(err);
+            console.error('Failed to load:', err);
         });
 
         function scan() {
@@ -93,7 +92,6 @@
             const activeGroup = sysGroups.star_system_groups[system] || [];
 
             for (let loc in oreData) {
-                // Check if the location exists in your provided system_sorting.json list
                 if (!activeGroup.includes(loc)) continue;
 
                 let foundOres = [];
@@ -108,13 +106,12 @@
                 });
 
                 if (foundOres.length > 0) {
-                    // Map raw ID to player-facing name using reference.json
+                    // Use the reference.json map for player-recognized names
                     const friendlyName = refMapping.location_mapping[loc] || loc;
                     matches.push({ name: friendlyName, ores: foundOres, sortVal: maxProb });
                 }
             }
 
-            // Sort by highest density found
             matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
                 const card = document.createElement('div');
                 card.className = "card";
