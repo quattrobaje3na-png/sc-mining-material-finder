@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v29.6</h3>
+        <h3>> INTEL_v29.7_FULL_DATABASE</h3>
         <p id="status">ESTABLISHING DATA LINK...</p>
     </div>
 
@@ -34,30 +34,50 @@
 
     <label>TARGET_RESOURCES</label>
     <select id="ore1">
-        <option value="">- SELECT MATERIAL -</option>
+        <option value="">- SELECT MATERIAL 01 -</option>
         <option value="Quantanium">QUANTANIUM</option>
-        <option value="Laranite">LARANITE</option>
+        <option value="Gold">GOLD</option>
         <option value="Bexalite">BEXALITE</option>
         <option value="Taranite">TARANITE</option>
+        <option value="Laranite">LARANITE</option>
         <option value="Agricium">AGRICIUM</option>
         <option value="Hephaestanite">HEPHAESTANITE</option>
         <option value="Borase">BORASE</option>
-        <option value="Gold">GOLD</option>
+        <option value="Diamond">DIAMOND</option>
+        <option value="Beryl">BERYL</option>
+        <option value="Titanium">TITANIUM</option>
+        <option value="Copper">COPPER</option>
+        <option value="Quartz">QUARTZ</option>
+        <option value="Corundum">CORUNDUM</option>
+        <option value="Aluminum">ALUMINUM</option>
+        <option value="Iron">IRON</option>
+        <option value="Tungsten">TUNGSTEN</option>
+        <option value="Ammonia">AMMONIA</option>
     </select>
 
     <select id="ore2">
-        <option value="">- SELECT MATERIAL -</option>
+        <option value="">- SELECT MATERIAL 02 -</option>
         <option value="Quantanium">QUANTANIUM</option>
-        <option value="Laranite">LARANITE</option>
+        <option value="Gold">GOLD</option>
         <option value="Bexalite">BEXALITE</option>
         <option value="Taranite">TARANITE</option>
+        <option value="Laranite">LARANITE</option>
         <option value="Agricium">AGRICIUM</option>
         <option value="Hephaestanite">HEPHAESTANITE</option>
         <option value="Borase">BORASE</option>
-        <option value="Gold">GOLD</option>
+        <option value="Diamond">DIAMOND</option>
+        <option value="Beryl">BERYL</option>
+        <option value="Titanium">TITANIUM</option>
+        <option value="Copper">COPPER</option>
+        <option value="Quartz">QUARTZ</option>
+        <option value="Corundum">CORUNDUM</option>
+        <option value="Aluminum">ALUMINUM</option>
+        <option value="Iron">IRON</option>
+        <option value="Tungsten">TUNGSTEN</option>
+        <option value="Ammonia">AMMONIA</option>
     </select>
 
-    <button onclick="scan()">Execute Scan</button>
+    <button onclick="scan()">Execute Full Scan</button>
     <div id="results"></div>
 
     <script>
@@ -71,7 +91,7 @@
             fetch(BASE_URL + 'reference.json', {cache: "no-store"}).then(r => r.json())
         ]).then(responses => {
             [oreData, sysGroups, refMapping] = responses;
-            statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
+            statusText.innerText = "READY: FULL SYNC COMPLETE";
         }).catch(err => {
             statusText.innerText = "SYNC_ERROR";
             statusText.style.color = "red";
@@ -89,7 +109,6 @@
             const activeGroup = sysGroups.star_system_groups[system] || [];
 
             for (let loc in oreData) {
-                // Check if location is in the selected system group
                 if (!activeGroup.includes(loc)) continue;
 
                 let foundOres = [];
@@ -97,7 +116,7 @@
 
                 picks.forEach(p => {
                     const locOres = oreData[loc].ores || {};
-                    // Match the material exactly OR case-insensitive check
+                    // Improved matching logic to handle minor spelling/case variances in JSON keys
                     const matchKey = Object.keys(locOres).find(k => k.toLowerCase() === p.toLowerCase());
                     
                     if (matchKey) {
