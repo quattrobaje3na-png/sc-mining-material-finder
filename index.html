@@ -27,8 +27,8 @@
 </head>
 <body>
     <div class="terminal-header">
-        <h3>> SECTOR_ANALYSIS_v20.9</h3>
-        <p id="status">[LINK: ONLINE // RECALIBRATED]</p>
+        <h3>> SECTOR_ANALYSIS_v20.10</h3>
+        <p id="status">[LINK: ONLINE // REGOLITH_SYNC_ACTIVE]</p>
     </div>
 
     <label>Region_Selection</label>
@@ -53,12 +53,18 @@
             const scanBtn = document.getElementById('scan-btn');
             const DATA_URL = 'https://quattrobaje3na-png.github.io/sc-mining-tool/OreLocations.json';
 
+            // Regolith Style Cleanup
             function cleanName(raw) {
-                // Strip system and type prefixes ONLY if followed by underscore
-                return raw.replace(/^(STA|PYR|NYX)_/g, '')
-                          .replace(/^(MOON|PLANET|LAGRANGE|BELT|ZONE|STATION)_/g, '')
-                          .replace(/_/g, ' ')
-                          .trim();
+                let clean = raw.replace(/^(STA|PYR|NYX)_/g, '')
+                               .replace(/^(MOON|PLANET|LAGRANGE|BELT|ZONE|STATION)_/g, '')
+                               .replace(/_/g, ' ')
+                               .trim();
+                
+                // Map Mining Bases to Regolith User-Facing Names
+                if (clean.includes("Mining Base")) {
+                    clean = clean.replace("Mining Base", "BASE");
+                }
+                return clean;
             }
 
             fetch(DATA_URL).then(res => res.json()).then(data => {
@@ -77,7 +83,7 @@
                 for (let loc in oreData) {
                     const locUpper = loc.toUpperCase();
                     
-                    // 1. System Filtering
+                    // Filter system first
                     const isPyro = locUpper.includes('PYR') || locUpper.includes('RAB-') || locUpper.includes('RMB-') || locUpper.includes('AKIRO') || locUpper.includes('BLOOM');
                     const isNyx = locUpper.includes('NYX') || locUpper.includes('GLACIUM');
                     
@@ -85,15 +91,12 @@
                     if (system === "NYX" && !isNyx) continue;
                     if (system === "STANTON" && (isPyro || isNyx)) continue;
 
-                    // 2. Blacklist Filtering (Sectors and internal codes)
-                    const isSectorCode = /^[A-Z0-9]{2}-/.test(locUpper);
-                    const isWhitelistedPyro = locUpper.includes('RAB-') || locUpper.includes('RMB-');
+                    // Filter "Trash" Codes but KEEP Named Mining Bases and Pyro points
+                    const isMiningBase = locUpper.includes('MINING_BASE');
+                    const isPyroPoint = locUpper.includes('RAB-') || locUpper.includes('RMB-') || locUpper.includes('AKIRO') || locUpper.includes('BLOOM');
+                    const isStandardBody = locUpper.includes('MOON') || locUpper.includes('HALO') || locUpper.includes('BELT') || locUpper.includes('PLANET');
                     
-                    // If it's a sector code and NOT one of our whitelisted Pyro points, kill it.
-                    if (isSectorCode && !isWhitelistedPyro) continue;
-                    
-                    // Kill anything containing "SECTOR" unless it's a known Pyro name
-                    if (locUpper.includes('SECTOR') && !isWhitelistedPyro && !locUpper.includes('AKIRO') && !locUpper.includes('BLOOM')) continue;
+                    if (!isMiningBase && !isPyroPoint && !isStandardBody && !locUpper.includes('CELLIN') && !locUpper.includes('YELA') && !locUpper.includes('DAYMAR')) continue;
 
                     let locationOres = [];
                     let highProb = 0;
