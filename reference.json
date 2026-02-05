@@ -122,6 +122,13 @@
     "ST-Q9Q-090": "HDMS-Norgaard (Aberdeen)",
     "ST-AL5-XPD": "HDMS-Woodruff (Cellin)",
     "ST-RCD-0B3": "HDMS-Gomez (Cellin)",
-    "ST-CVF-T6H": "Kudre Ore (Daymar)"
+    "ST-CVF-T6H": "Kudre Ore (Daymar)",
+    "GLACIUM": "Glacium (Nyx System)",
+    "NYX_GATEWAY": "Nyx Gateway (Jump Point Station)",
+    "DELAMAR": "Delamar (Asteroid)",
+    "NYX_L1": "Nyx L1",
+    "NYX_L2": "Nyx L2",
+    "NYX_L3": "Nyx L3"
   }
 }
+
