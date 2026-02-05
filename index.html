@@ -8,11 +8,10 @@
         body { background:#000; color:#FFB300; font-family: monospace; padding:15px; }
         .header { border-bottom:1px solid #332200; margin-bottom:20px; padding-bottom:10px; }
         select, button { 
-            background:#000; color:#FFB300; border:1px solid #FFB300; 
+            background:#111; color:#FFB300; border:1px solid #FFB300; 
             padding:12px; margin-bottom:10px; width:100%; font-size: 16px;
         }
-        button { font-weight:bold; text-transform:uppercase; cursor:pointer; }
-        button:hover { background:#FFB300; color:#000; }
+        button { font-weight:bold; cursor:pointer; }
         .card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-bottom:10px; background:#050505; }
         .row { display: flex; justify-content: space-between; font-size: 14px; margin-top:5px; border-top: 1px solid #222; padding-top:5px; }
         #status { font-size:12px; color:#00FF00; }
@@ -20,11 +19,11 @@
 </head>
 <body>
     <div class="header">
-        <h3>> MINING_INTEL_v25.0</h3>
+        <h3>> INTEL_v28.0</h3>
         <p id="status">INITIALIZING...</p>
     </div>
 
-    <label>RESOURCE ALPHA</label>
+    <label>TARGET 1</label>
     <select id="ore1">
         <option value="">- SELECT MATERIAL -</option>
         <option value="Quantanium">QUANTANIUM</option>
@@ -37,7 +36,7 @@
         <option value="Gold">GOLD</option>
     </select>
 
-    <label>RESOURCE BRAVO</label>
+    <label>TARGET 2</label>
     <select id="ore2">
         <option value="">- SELECT MATERIAL -</option>
         <option value="Quantanium">QUANTANIUM</option>
@@ -54,65 +53,38 @@
     <div id="results"></div>
 
     <script>
-        let data = null;
-        const status = document.getElementById('status');
+        let rawData = null;
+        const statusText = document.getElementById('status');
 
         fetch('https://quattrobaje3na-png.github.io/sc-mining-tool/OreLocations.json')
-            .then(r => r.json())
+            .then(res => res.json())
             .then(json => {
-                data = json;
-                status.innerText = "ONLINE: DATA LOADED";
+                rawData = json;
+                statusText.innerText = "READY: DATABASE CONNECTED";
             })
-            .catch(e => {
-                status.innerText = "OFFLINE: JSON NOT FOUND";
-                status.style.color = "red";
+            .catch(err => {
+                statusText.innerText = "ERROR: JSON NOT FOUND";
+                statusText.style.color = "red";
             });
 
         function scan() {
             const out = document.getElementById('results');
-            const picks = [
-                document.getElementById('ore1').value,
-                document.getElementById('ore2').value
-            ].filter(v => v !== "");
+            const o1 = document.getElementById('ore1').value;
+            const o2 = document.getElementById('ore2').value;
+            const picks = [o1, o2].filter(p => p !== "");
 
             out.innerHTML = "";
 
-            if (!data) { alert("Data still loading..."); return; }
+            if (!rawData) { alert("Data hasn't loaded."); return; }
             if (picks.length === 0) return;
 
             const matches = [];
 
-            for (let loc in data) {
+            for (let loc in rawData) {
                 let foundOres = [];
-                let topProb = 0;
+                let maxProb = 0;
 
                 picks.forEach(p => {
-                    // Check if location has an ores object and if that ore exists
-                    if (data[loc].ores && data[loc].ores[p]) {
-                        let prob = data[loc].ores[p].prob;
-                        foundOres.push({ name: p.toUpperCase(), val: (prob * 100).toFixed(1) });
-                        if (prob > topProb) topProb = prob;
-                    }
-                });
-
-                if (foundOres.length > 0) {
-                    matches.push({ name: loc.replace(/_/g, ' '), ores: foundOres, sort: topProb });
-                }
-            }
-
-            // Simple descending sort
-            matches.sort((a, b) => b.sort - a.sort).forEach(m => {
-                const div = document.createElement('div');
-                div.className = "card";
-                let rows = m.ores.map(o => `<div class="row"><span>${o.name}</span><span>${o.val}%</span></div>`).join('');
-                div.innerHTML = `<strong>${m.name}</strong>${rows}`;
-                out.appendChild(div);
-            });
-
-            if (matches.length === 0) {
-                out.innerHTML = "<p>NO RESULTS FOUND</p>";
-            }
-        }
-    </script>
-</body>
-</html>
+                    if (rawData[loc].ores && rawData[loc].ores[p]) {
+                        let prob = rawData[loc].ores[p].prob || 0;
+                        foundOres.push({ name: p.toUpperCase(), val: (prob * 100).toFixed(1)
