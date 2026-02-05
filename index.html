@@ -2,83 +2,102 @@
 <html>
 <head>
     <style>
-        body { background:#000; color:#FFB300; font-family: 'Courier New', monospace; margin:0; padding:20px; }
+        body { background:#000; color:#FFB300; font-family: 'Courier New', monospace; margin:0; padding:15px; }
         .terminal { border:1px solid #FFB300; padding:20px; box-shadow: 0 0 15px rgba(255, 179, 0, 0.2); }
-        select, button { background:#000; color:#FFB300; border:1px solid #FFB300; padding:10px; margin-bottom:10px; width:100%; font-family:inherit; }
-        button:hover { background:#FFB300; color:#000; cursor:pointer; }
-        .result-card { border:1px solid #332200; border-left:4px solid #FFB300; padding:10px; margin-top:10px; background:#050505; }
-    </style>
+        select, button { background:#000; color:#FFB300; border:1px solid #FFB300; padding:12px; margin-bottom:10px; width:100%; font-family:inherit; font-size: 14px; }
+        button:hover { background:#FFB300; color:#000; cursor:pointer; font-weight:bold; }
+        .result-card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-top:10px; background:#050505; }
+        .sig { color: #665500; font-size: 10px; }
+    </small></style>
 </head>
 <body>
     <div class="terminal">
-        <h3>> SECTOR_ANALYSIS_v18.0</h3>
-        <p id="status">[LINK: ESTABLISHING...]</p>
+        <h3 style="margin-top:0;">> SECTOR_ANALYSIS_v18.2</h3>
+        <p id="status" style="color:#00FF00; font-size:11px;">[LINK: ESTABLISHING...]</p>
 
         <select id="sys-select">
             <option value="STANTON">STANTON_SYSTEM</option>
             <option value="PYRO">PYRO_SYSTEM</option>
+            <option value="NYX">NYX_SYSTEM</option>
         </select>
 
-        <select class="mat-select"><option value="">- SELECT_ORE_01 -</option></select>
-        <select class="mat-select"><option value="">- SELECT_ORE_02 -</option></select>
-        <select class="mat-select"><option value="">- SELECT_ORE_03 -</option></select>
+        <select id="mat-select">
+            <option value="">- SELECT PRIMARY TARGET -</option>
+            <option value="QUANTANIUM">QUANTANIUM (Q-TYPE)</option>
+            <option value="LARANITE">LARANITE (P/Q-TYPE)</option>
+            <option value="BEXALITE">BEXALITE (Q-TYPE)</option>
+            <option value="AGRICIUM">AGRICIUM (M-TYPE)</option>
+            <option value="TARANITE">TARANITE (M-TYPE)</option>
+            <option value="HEPHAESTANITE">HEPHAESTANITE (C-TYPE)</option>
+            <option value="GOLD">GOLD (M-TYPE)</option>
+        </select>
 
-        <button onclick="runScan()">EXECUTE_SCAN</button>
+        <button onclick="runScan()">EXECUTE DEEP SCAN</button>
         <div id="results"></div>
     </div>
 
     <script>
         let oreData = null;
         const status = document.getElementById('status');
+        
+        // Translation Layer: Material -> Rock Types
+        const matMap = {
+            "QUANTANIUM": ["QTYPE"],
+            "LARANITE": ["PTYPE", "QTYPE"],
+            "BEXALITE": ["QTYPE"],
+            "AGRICIUM": ["MTYPE"],
+            "TARANITE": ["MTYPE"],
+            "HEPHAESTANITE": ["CTYPE"],
+            "GOLD": ["MTYPE"]
+        };
 
-        // This works because the JSON is on the same domain as the HTML
-        fetch('OreLocations.json')
-            .then(response => response.json())
+        const rsMap = {"QTYPE":"4870", "PTYPE":"4750", "MTYPE":"4850", "CTYPE":"4700"};
+
+        fetch('RockTypeLocations_2026-02-04 (1).json')
+            .then(res => res.json())
             .then(data => {
                 oreData = data;
-                status.innerText = "[LINK: ONLINE // GITHUB_SYNC_SUCCESS]";
-                populateMenus();
+                status.innerText = "[LINK: ONLINE // DATA_STREAM_STABLE]";
             })
             .catch(err => {
-                status.innerText = "[LINK: ERROR // CHECK_JSON_FILE]";
+                status.innerText = "[LINK: ERROR // DATA_FILE_NOT_FOUND]";
                 status.style.color = "#FF0000";
             });
-
-        function populateMenus() {
-            const materials = new Set();
-            for (let loc in oreData) {
-                if (oreData[loc].ores) {
-                    Object.keys(oreData[loc].ores).forEach(m => materials.add(m));
-                }
-            }
-            const selects = document.querySelectorAll('.mat-select');
-            materials.forEach(m => {
-                selects.forEach(s => {
-                    let opt = document.createElement('option');
-                    opt.value = m; opt.innerText = m;
-                    s.appendChild(opt);
-                });
-            });
-        }
 
         function runScan() {
             const out = document.getElementById('results');
             const system = document.getElementById('sys-select').value;
-            const picks = Array.from(document.querySelectorAll('.mat-select')).map(s => s.value).filter(v => v);
+            const target = document.getElementById('mat-select').value;
             out.innerHTML = "";
 
+            if (!target) return;
+
             for (let loc in oreData) {
-                let weight = 0;
-                picks.forEach(ore => {
-                    if (oreData[loc].ores && oreData[loc].ores[ore]) {
-                        weight += oreData[loc].ores[ore].prob;
+                // System Filtering Heuristic
+                const isPyro = loc.includes('RAB') || loc.includes('RMB') || loc.includes('Pyro');
+                const isNyx = loc.includes('Glacium') || loc.includes('Nyx');
+                
+                if (system === "PYRO" && !isPyro) continue;
+                if (system === "NYX" && !isNyx) continue;
+                if (system === "STANTON" && (isPyro || isNyx)) continue;
+
+                let prob = 0;
+                let sigs = [];
+                
+                matMap[target].forEach(rt => {
+                    if (oreData[loc].rockTypes && oreData[loc].rockTypes[rt]) {
+                        prob += oreData[loc].rockTypes[rt].prob;
+                        sigs.push(rsMap[rt]);
                     }
                 });
 
-                if (weight > 0) {
+                if (prob > 0) {
                     const div = document.createElement('div');
                     div.className = "result-card";
-                    div.innerHTML = `<b>${loc}</b><br><small>WEIGHT: ${(weight*100).toFixed(0)}</small>`;
+                    div.innerHTML = `
+                        <b style="color:#FFB300;">${loc.replace(/_/g, ' ')}</b><br>
+                        <span class="sig">DENSITY: ${(prob * 100).toFixed(1)}% | RS_SIG: ${[...new Set(sigs)].join('/')}</span>
+                    `;
                     out.appendChild(div);
                 }
             }
