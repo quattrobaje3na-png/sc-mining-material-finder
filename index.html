@@ -2,36 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Citizen Starter Guide - Mining Intel</title>
     <style>
-        body { background:#000; color:#FFB300; font-family: 'Courier New', monospace; margin:0; padding:15px; overflow-x:hidden; }
-        .terminal-header { border-bottom:1px solid #332200; margin-bottom:20px; padding-bottom:10px; }
-        label { font-size:10px; color:#665500; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px; }
+        /* BASE THEME */
+        body { background:#000; color:#FFB300; font-family: 'Courier New', monospace; margin:0; padding:10px; overflow-x:hidden; }
+        .terminal-header { border-bottom:1px solid #332200; margin-bottom:15px; padding-bottom:10px; }
+        
+        /* SCALABLE FONTS */
+        h3 { font-size: 1.2rem; margin:0; letter-spacing:1px; }
+        label { font-size:9px; color:#665500; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px; }
+        
+        /* FLUID INPUTS */
         select, button { 
             background:#000; color:#FFB300; border:1px solid #FFB300; 
-            padding:12px; margin-bottom:15px; width:100%; 
-            font-family:inherit; font-size: 14px; outline:none;
+            padding:14px; margin-bottom:12px; width:100%; 
+            font-family:inherit; font-size: 16px; /* 16px prevents iOS zoom on focus */
+            outline:none;
+            border-radius: 0; /* Keeps the sharp terminal look */
+            -webkit-appearance: none; /* Removes default styling */
         }
-        button { font-weight:bold; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition: 0.2s; background:#111; }
+        
+        button { font-weight:bold; text-transform:uppercase; cursor:pointer; background:#111; transition: 0.2s; }
         button:hover { background:#FFB300; color:#000; }
+
+        /* RESPONSIVE CARDS */
         .result-card { 
             border:1px solid #332200; border-left:4px solid #FFB300; 
-            padding:15px; margin-bottom:12px; background:#050505;
+            padding:12px; margin-bottom:10px; background:#050505;
             animation: fadeIn 0.3s ease-in;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        .sig-label { color: #665500; font-size: 11px; margin-top:5px; display:block; margin-bottom:8px; }
-        .mat-breakdown { color: #888; font-size: 11px; margin-top: 10px; border-top: 1px solid #221100; padding-top: 10px; }
-        .mat-row { display: flex; justify-content: space-between; margin-bottom: 6px; padding: 2px 0; border-bottom: 1px solid #111; }
-        .mat-name { color: #FFB300; text-transform: uppercase; font-weight: bold; }
-        .mat-percent { color: #00FF00; font-weight: bold; }
-        #status { font-size:11px; color:#00FF00; margin-bottom:15px; }
+        
+        .mat-breakdown { color: #888; font-size: 0.85rem; margin-top: 10px; border-top: 1px solid #221100; padding-top: 8px; }
+        .mat-row { display: flex; justify-content: space-between; margin-bottom: 5px; padding: 2px 0; border-bottom: 1px solid #111; }
+        .mat-name { color: #FFB300; text-transform: uppercase; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 5px; }
+        .mat-percent { color: #00FF00; font-weight: bold; flex-shrink: 0; }
+        
+        #status { font-size:10px; color:#00FF00; margin-bottom:10px; }
+
+        /* MOBILE OVERRIDES */
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            h3 { font-size: 1rem; }
+            select, button { padding: 12px; font-size: 14px; }
+            .mat-breakdown { font-size: 0.75rem; }
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
     <div class="terminal-header">
-        <h3 style="margin:0; letter-spacing:2px;">> SECTOR_ANALYSIS_v20.3</h3>
+        <h3 id="v-title">> SECTOR_ANALYSIS_v20.4</h3>
         <p id="status">[LINK: ESTABLISHING...]</p>
     </div>
 
@@ -42,7 +64,7 @@
         <option value="NYX">NYX_SYSTEM</option>
     </select>
 
-    <label>Resource_Targets (SELECT UP TO 3)</label>
+    <label>Resource_Targets</label>
     <select class="mat-select"><option value="">- SELECT_ORE_01 -</option><option value="AGRICIUM">AGRICIUM</option><option value="ALUMINUM">ALUMINUM</option><option value="AMMONIA">AMMONIA</option><option value="BERYL">BERYL</option><option value="BEXALITE">BEXALITE</option><option value="BORASE">BORASE</option><option value="COPPER">COPPER</option><option value="CORUNDUM">CORUNDUM</option><option value="DIAMOND">DIAMOND</option><option value="GOLD">GOLD</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="IRON">IRON</option><option value="LARANITE">LARANITE</option><option value="LINDINIUM">LINDINIUM</option><option value="QUANTANIUM">QUANTANIUM</option><option value="QUARTZ">QUARTZ</option><option value="TARANITE">TARANITE</option><option value="TITANIUM">TITANIUM</option><option value="TUNGSTEN">TUNGSTEN</option></select>
     <select class="mat-select"><option value="">- SELECT_ORE_02 -</option><option value="AGRICIUM">AGRICIUM</option><option value="ALUMINUM">ALUMINUM</option><option value="AMMONIA">AMMONIA</option><option value="BERYL">BERYL</option><option value="BEXALITE">BEXALITE</option><option value="BORASE">BORASE</option><option value="COPPER">COPPER</option><option value="CORUNDUM">CORUNDUM</option><option value="DIAMOND">DIAMOND</option><option value="GOLD">GOLD</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="IRON">IRON</option><option value="LARANITE">LARANITE</option><option value="LINDINIUM">LINDINIUM</option><option value="QUANTANIUM">QUANTANIUM</option><option value="QUARTZ">QUARTZ</option><option value="TARANITE">TARANITE</option><option value="TITANIUM">TITANIUM</option><option value="TUNGSTEN">TUNGSTEN</option></select>
     <select class="mat-select"><option value="">- SELECT_ORE_03 -</option><option value="AGRICIUM">AGRICIUM</option><option value="ALUMINUM">ALUMINUM</option><option value="AMMONIA">AMMONIA</option><option value="BERYL">BERYL</option><option value="BEXALITE">BEXALITE</option><option value="BORASE">BORASE</option><option value="COPPER">COPPER</option><option value="CORUNDUM">CORUNDUM</option><option value="DIAMOND">DIAMOND</option><option value="GOLD">GOLD</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="IRON">IRON</option><option value="LARANITE">LARANITE</option><option value="LINDINIUM">LINDINIUM</option><option value="QUANTANIUM">QUANTANIUM</option><option value="QUARTZ">QUARTZ</option><option value="TARANITE">TARANITE</option><option value="TITANIUM">TITANIUM</option><option value="TUNGSTEN">TUNGSTEN</option></select>
@@ -79,10 +101,8 @@
                 const matches = [];
 
                 for (let loc in oreData) {
-                    // SECTOR FILTER
                     if (loc.toLowerCase().includes("sector") && !loc.toLowerCase().includes("bloom") && !loc.toLowerCase().includes("akiro")) continue;
 
-                    // SYSTEM FILTER
                     const isPyro = loc.includes('PYR') || loc.includes('RAB') || loc.includes('BLOOM') || loc.includes('AKIRO');
                     const isNyx = loc.includes('GLACIUM') || loc.includes('NYX');
                     if (system === "PYRO" && !isPyro) continue;
@@ -92,7 +112,6 @@
                     let locationOres = [];
                     let highProb = 0;
 
-                    // INDIVIDUAL RATE CHECK
                     picks.forEach(target => {
                         if (oreData[loc].ores && oreData[loc].ores[target]) {
                             const val = oreData[loc].ores[target].prob;
@@ -106,7 +125,6 @@
                     }
                 }
 
-                // SORT BY HIGHEST INDIVIDUAL CHANCE
                 matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
                     const div = document.createElement('div');
                     div.className = "result-card";
