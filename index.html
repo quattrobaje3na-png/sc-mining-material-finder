@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v29.2</h3>
+        <h3>> INTEL_v29.4</h3>
         <p id="status">ESTABLISHING DATA LINK...</p>
     </div>
 
@@ -64,18 +64,19 @@
         let oreData, sysGroups, refMapping;
         const statusText = document.getElementById('status');
         
-        // Ensure your GitHub branch is named 'main'
+        // Using raw.githubusercontent.com for data access
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
+        // Added cache: "no-store" to bypass browser caching issues
         Promise.all([
-            fetch(BASE_URL + 'OreLocations.json').then(r => r.json()),
-            fetch(BASE_URL + 'system_sorting.json').then(r => r.json()),
-            fetch(BASE_URL + 'reference.json').then(r => r.json())
+            fetch(BASE_URL + 'OreLocations.json', {cache: "no-store"}).then(r => r.json()),
+            fetch(BASE_URL + 'system_sorting.json', {cache: "no-store"}).then(r => r.json()),
+            fetch(BASE_URL + 'reference.json', {cache: "no-store"}).then(r => r.json())
         ]).then(responses => {
             [oreData, sysGroups, refMapping] = responses;
             statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
         }).catch(err => {
-            statusText.innerText = "SYNC_ERROR: ENSURE FILENAMES ARE .json ON GITHUB";
+            statusText.innerText = "SYNC_ERROR: VERIFY FILENAMES IN REPOSITORY";
             statusText.style.color = "red";
             console.error(err);
         });
@@ -92,6 +93,7 @@
             const activeGroup = sysGroups.star_system_groups[system] || [];
 
             for (let loc in oreData) {
+                // Check if the location exists in your provided system_sorting.json list
                 if (!activeGroup.includes(loc)) continue;
 
                 let foundOres = [];
@@ -106,11 +108,13 @@
                 });
 
                 if (foundOres.length > 0) {
-                    const friendlyName = refMapping.location_mapping[loc] || loc.replace(/_/g, ' ');
+                    // Map raw ID to player-facing name using reference.json
+                    const friendlyName = refMapping.location_mapping[loc] || loc;
                     matches.push({ name: friendlyName, ores: foundOres, sortVal: maxProb });
                 }
             }
 
+            // Sort by highest density found
             matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
                 const card = document.createElement('div');
                 card.className = "card";
