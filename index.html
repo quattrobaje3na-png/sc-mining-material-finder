@@ -7,13 +7,13 @@
     <style>
         body { background:#000; color:#FFB300; font-family: 'Courier New', monospace; margin:0; padding:15px; overflow-x:hidden; }
         .terminal-header { border-bottom:1px solid #332200; margin-bottom:20px; padding-bottom:10px; }
-        label { font-size:10px; color:#665500; text-transform:uppercase; letter-spacing:1px; }
+        label { font-size:10px; color:#665500; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px; }
         select, button { 
             background:#000; color:#FFB300; border:1px solid #FFB300; 
             padding:12px; margin-bottom:15px; width:100%; 
             font-family:inherit; font-size: 14px; outline:none;
         }
-        button { font-weight:bold; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition: 0.2s; }
+        button { font-weight:bold; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition: 0.2s; background:#111; }
         button:hover { background:#FFB300; color:#000; }
         .result-card { 
             border:1px solid #332200; border-left:4px solid #FFB300; 
@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="terminal-header">
-        <h3 style="margin:0; letter-spacing:2px;">> SECTOR_ANALYSIS_v19.5</h3>
+        <h3 style="margin:0; letter-spacing:2px;">> SECTOR_ANALYSIS_v19.8</h3>
         <p id="status">[LINK: ESTABLISHING...]</p>
     </div>
 
@@ -38,17 +38,18 @@
         <option value="NYX">NYX_SYSTEM</option>
     </select>
 
-    <label>Resource_Target</label>
-    <select id="mat-select">
-        <option value="">- SELECT PRIMARY TARGET -</option>
-        <option value="QUANTANIUM">QUANTANIUM</option>
-        <option value="LARANITE">LARANITE</option>
-        <option value="BEXALITE">BEXALITE</option>
-        <option value="TARANITE">TARANITE</option>
-        <option value="AGRICIUM">AGRICIUM</option>
-        <option value="GOLD">GOLD</option>
-        <option value="BERYL">BERYL</option>
-        <option value="HEPHAESTANITE">HEPHAESTANITE</option>
+    <label>Resource_Targets (Primary/Secondary/Tertiary)</label>
+    <select class="mat-select">
+        <option value="">- SELECT_ORE_01 -</option>
+        <option value="AGRICIUM">AGRICIUM</option><option value="ALUMINUM">ALUMINUM</option><option value="AMMONIA">AMMONIA</option><option value="BERYL">BERYL</option><option value="BEXALITE">BEXALITE</option><option value="BORASE">BORASE</option><option value="COPPER">COPPER</option><option value="CORUNDUM">CORUNDUM</option><option value="DIAMOND">DIAMOND</option><option value="GOLD">GOLD</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="IRON">IRON</option><option value="LARANITE">LARANITE</option><option value="LINDINIUM">LINDINIUM</option><option value="QUANTANIUM">QUANTANIUM</option><option value="QUARTZ">QUARTZ</option><option value="RICCITE">RICCITE</option><option value="SAVRILIUM">SAVRILIUM</option><option value="SILICON">SILICON</option><option value="STILERON">STILERON</option><option value="TARANITE">TARANITE</option><option value="TIN">TIN</option><option value="TITANIUM">TITANIUM</option><option value="TORITE">TORITE</option><option value="TUNGSTEN">TUNGSTEN</option>
+    </select>
+    <select class="mat-select">
+        <option value="">- SELECT_ORE_02 -</option>
+        <option value="AGRICIUM">AGRICIUM</option><option value="ALUMINUM">ALUMINUM</option><option value="AMMONIA">AMMONIA</option><option value="BERYL">BERYL</option><option value="BEXALITE">BEXALITE</option><option value="BORASE">BORASE</option><option value="COPPER">COPPER</option><option value="CORUNDUM">CORUNDUM</option><option value="DIAMOND">DIAMOND</option><option value="GOLD">GOLD</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="IRON">IRON</option><option value="LARANITE">LARANITE</option><option value="LINDINIUM">LINDINIUM</option><option value="QUANTANIUM">QUANTANIUM</option><option value="QUARTZ">QUARTZ</option><option value="RICCITE">RICCITE</option><option value="SAVRILIUM">SAVRILIUM</option><option value="SILICON">SILICON</option><option value="STILERON">STILERON</option><option value="TARANITE">TARANITE</option><option value="TIN">TIN</option><option value="TITANIUM">TITANIUM</option><option value="TORITE">TORITE</option><option value="TUNGSTEN">TUNGSTEN</option>
+    </select>
+    <select class="mat-select">
+        <option value="">- SELECT_ORE_03 -</option>
+        <option value="AGRICIUM">AGRICIUM</option><option value="ALUMINUM">ALUMINUM</option><option value="AMMONIA">AMMONIA</option><option value="BERYL">BERYL</option><option value="BEXALITE">BEXALITE</option><option value="BORASE">BORASE</option><option value="COPPER">COPPER</option><option value="CORUNDUM">CORUNDUM</option><option value="DIAMOND">DIAMOND</option><option value="GOLD">GOLD</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="IRON">IRON</option><option value="LARANITE">LARANITE</option><option value="LINDINIUM">LINDINIUM</option><option value="QUANTANIUM">QUANTANIUM</option><option value="QUARTZ">QUARTZ</option><option value="RICCITE">RICCITE</option><option value="SAVRILIUM">SAVRILIUM</option><option value="SILICON">SILICON</option><option value="STILERON">STILERON</option><option value="TARANITE">TARANITE</option><option value="TIN">TIN</option><option value="TITANIUM">TITANIUM</option><option value="TORITE">TORITE</option><option value="TUNGSTEN">TUNGSTEN</option>
     </select>
 
     <button id="scan-btn">Execute Deep Scan</button>
@@ -60,17 +61,17 @@
             const statusMsg = document.getElementById('status');
             const scanBtn = document.getElementById('scan-btn');
             
-            // Absolute path to the data file in your repository
             const DATA_URL = 'https://quattrobaje3na-png.github.io/sc-mining-tool/OreLocations.json';
 
             const rsMap = {
                 "QUANTANIUM":"4870", "LARANITE":"4750", "TARANITE":"4850", 
                 "AGRICIUM":"4850", "BEXALITE":"4870", "TITANIUM":"4900", 
                 "BERYL":"4900", "COPPER":"4750", "GOLD":"4850", 
-                "QUARTZ":"4700", "BORASE":"4700", "HEPHAESTANITE":"4700"
+                "QUARTZ":"4700", "BORASE":"4700", "HEPHAESTANITE":"4700",
+                "LINDINIUM":"4850", "DIAMOND":"4750", "ALUMINUM":"4900",
+                "AMMONIA":"4720", "CORUNDUM":"4720"
             };
 
-            // Fetch the manifest immediately
             fetch(DATA_URL)
                 .then(res => {
                     if(!res.ok) throw new Error(res.status);
@@ -89,45 +90,62 @@
             scanBtn.onclick = function() {
                 const out = document.getElementById('results');
                 const system = document.getElementById('sys-select').value;
-                const target = document.getElementById('mat-select').value;
+                const picks = Array.from(document.querySelectorAll('.mat-select')).map(s => s.value).filter(v => v);
                 
                 out.innerHTML = "";
                 
-                if (!target) {
-                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[ERROR: NO TARGET SELECTED]</p>";
-                    return;
-                }
-                
-                if (!oreData) {
-                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[ERROR: DATA NOT LOADED]</p>";
-                    return;
-                }
+                if (picks.length === 0 || !oreData) return;
+
+                // Sort results by combined probability
+                const matches = [];
 
                 for (let loc in oreData) {
-                    // System Sorting Heuristics
-                    const isPyro = loc.includes('PYR') || loc.includes('RAB') || loc.includes('BLOOM');
+                    // FILTER: Ignore generic "Sectors" but keep named locations
+                    if (loc.toLowerCase().includes("sector") && !loc.toLowerCase().includes("bloom") && !loc.toLowerCase().includes("akiro")) continue;
+
+                    const isPyro = loc.includes('PYR') || loc.includes('RAB') || loc.includes('BLOOM') || loc.includes('AKIRO');
                     const isNyx = loc.includes('GLACIUM') || loc.includes('NYX');
                     
                     if (system === "PYRO" && !isPyro) continue;
                     if (system === "NYX" && !isNyx) continue;
                     if (system === "STANTON" && (isPyro || isNyx)) continue;
 
-                    if (oreData[loc].ores && oreData[loc].ores[target]) {
-                        const prob = oreData[loc].ores[target].prob;
-                        const sig = rsMap[target] || "VARIES";
-                        
-                        const div = document.createElement('div');
-                        div.className = "result-card";
-                        div.innerHTML = `
-                            <strong style="text-transform:uppercase; color:#FFB300;">${loc.replace(/_/g, ' ')}</strong>
-                            <span class="sig-label">DENSITY: ${(prob * 100).toFixed(1)}% | SCAN_SIG: ${sig}</span>
-                        `;
-                        out.appendChild(div);
+                    let totalProb = 0;
+                    let sigs = [];
+                    let foundAny = false;
+
+                    picks.forEach(target => {
+                        if (oreData[loc].ores && oreData[loc].ores[target]) {
+                            totalProb += oreData[loc].ores[target].prob;
+                            foundAny = true;
+                            if (rsMap[target]) sigs.push(rsMap[target]);
+                        }
+                    });
+
+                    if (foundAny) {
+                        matches.push({
+                            name: loc.replace(/_/g, ' '),
+                            prob: totalProb,
+                            sigs: [...new Set(sigs)].join('/') || 'VARIES'
+                        });
                     }
                 }
 
+                // Rank by highest probability
+                matches.sort((a, b) => b.prob - a.prob);
+
+                matches.forEach(match => {
+                    const div = document.createElement('div');
+                    div.className = "result-card";
+                    div.innerHTML = `
+                        <strong style="text-transform:uppercase; color:#FFB300;">${match.name}</strong>
+                        <span class="sig-label">PROBABILITY: ${(match.prob * 100).toFixed(1)}% | RS_SIG: ${match.sigs}</span>
+                    `;
+                    out.appendChild(div);
+                });
+
                 if (out.innerHTML === "") {
-                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO DATA DETECTED IN THIS REGION]</p>";
+                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO TARGET DATA IN THIS REGION]</p>";
                 }
             };
         })();
