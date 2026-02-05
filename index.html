@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Starter Guide - Mining Intel</title>
     <style>
         body { background:#000; color:#FFB300; font-family: 'Courier New', monospace; margin:0; padding:15px; overflow-x:hidden; }
         .terminal-header { border-bottom:1px solid #332200; margin-bottom:20px; padding-bottom:10px; }
+        label { font-size:10px; color:#665500; text-transform:uppercase; letter-spacing:1px; }
         select, button { 
             background:#000; color:#FFB300; border:1px solid #FFB300; 
             padding:12px; margin-bottom:15px; width:100%; 
             font-family:inherit; font-size: 14px; outline:none;
         }
-        button { font-weight:bold; text-transform:uppercase; letter-spacing:1px; cursor:pointer; }
+        button { font-weight:bold; text-transform:uppercase; letter-spacing:1px; cursor:pointer; transition: 0.2s; }
         button:hover { background:#FFB300; color:#000; }
         .result-card { 
             border:1px solid #332200; border-left:4px solid #FFB300; 
@@ -24,18 +27,18 @@
 </head>
 <body>
     <div class="terminal-header">
-        <h3 style="margin:0; letter-spacing:2px;">> SECTOR_ANALYSIS_v19.1</h3>
+        <h3 style="margin:0; letter-spacing:2px;">> SECTOR_ANALYSIS_v19.5</h3>
         <p id="status">[LINK: ESTABLISHING...]</p>
     </div>
 
-    <label style="font-size:10px; color:#665500; text-transform:uppercase;">Region_Selection</label>
+    <label>Region_Selection</label>
     <select id="sys-select">
         <option value="STANTON">STANTON_SYSTEM</option>
         <option value="PYRO">PYRO_SYSTEM</option>
         <option value="NYX">NYX_SYSTEM</option>
     </select>
 
-    <label style="font-size:10px; color:#665500; text-transform:uppercase;">Resource_Target</label>
+    <label>Resource_Target</label>
     <select id="mat-select">
         <option value="">- SELECT PRIMARY TARGET -</option>
         <option value="QUANTANIUM">QUANTANIUM</option>
@@ -44,73 +47,90 @@
         <option value="TARANITE">TARANITE</option>
         <option value="AGRICIUM">AGRICIUM</option>
         <option value="GOLD">GOLD</option>
+        <option value="BERYL">BERYL</option>
+        <option value="HEPHAESTANITE">HEPHAESTANITE</option>
     </select>
 
-    <button onclick="runScan()">Execute Deep Scan</button>
+    <button id="scan-btn">Execute Deep Scan</button>
     <div id="results"></div>
 
     <script>
-        let oreData = null;
-        const statusMsg = document.getElementById('status');
-        
-        // Scan Signature Map (RS Codes)
-        const rsMap = {
-            "QUANTANIUM":"4870", "LARANITE":"4750", "TARANITE":"4850", 
-            "AGRICIUM":"4850", "BEXALITE":"4870", "TITANIUM":"4900", 
-            "BERYL":"4900", "COPPER":"4750", "GOLD":"4850", 
-            "QUARTZ":"4700", "BORASE":"4700", "HEPHAESTANITE":"4700"
-        };
+        (function() {
+            let oreData = null;
+            const statusMsg = document.getElementById('status');
+            const scanBtn = document.getElementById('scan-btn');
+            
+            // Absolute path to the data file in your repository
+            const DATA_URL = 'https://quattrobaje3na-png.github.io/sc-mining-tool/OreLocations.json';
 
-        // Fetching the file you named
-        fetch('OreLocations.json')
-            .then(res => {
-                if(!res.ok) throw new Error(res.status);
-                return res.json();
-            })
-            .then(data => {
-                oreData = data;
-                statusMsg.innerText = "[LINK: ONLINE // MANIFEST_SYNCED]";
-            })
-            .catch(err => {
-                statusMsg.innerText = "[LINK: ERROR // OreLocations.json NOT FOUND]";
-                statusMsg.style.color = "#FF0000";
-            });
+            const rsMap = {
+                "QUANTANIUM":"4870", "LARANITE":"4750", "TARANITE":"4850", 
+                "AGRICIUM":"4850", "BEXALITE":"4870", "TITANIUM":"4900", 
+                "BERYL":"4900", "COPPER":"4750", "GOLD":"4850", 
+                "QUARTZ":"4700", "BORASE":"4700", "HEPHAESTANITE":"4700"
+            };
 
-        function runScan() {
-            const out = document.getElementById('results');
-            const system = document.getElementById('sys-select').value;
-            const target = document.getElementById('mat-select').value;
-            out.innerHTML = "";
+            // Fetch the manifest immediately
+            fetch(DATA_URL)
+                .then(res => {
+                    if(!res.ok) throw new Error(res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    oreData = data;
+                    statusMsg.innerText = "[LINK: ONLINE // DATA_STREAM_SECURE]";
+                    statusMsg.style.color = "#00FF00";
+                })
+                .catch(err => {
+                    statusMsg.innerText = "[LINK: ERROR // CORE_MANIFEST_UNREACHABLE]";
+                    statusMsg.style.color = "#FF0000";
+                });
 
-            if (!target || !oreData) return;
-
-            for (let loc in oreData) {
-                // Determine System
-                const isPyro = loc.includes('PYR') || loc.includes('RAB') || loc.includes('BLOOM');
-                const isNyx = loc.includes('GLACIUM') || loc.includes('NYX');
+            scanBtn.onclick = function() {
+                const out = document.getElementById('results');
+                const system = document.getElementById('sys-select').value;
+                const target = document.getElementById('mat-select').value;
                 
-                if (system === "PYRO" && !isPyro) continue;
-                if (system === "NYX" && !isNyx) continue;
-                if (system === "STANTON" && (isPyro || isNyx)) continue;
-
-                if (oreData[loc].ores && oreData[loc].ores[target]) {
-                    const prob = oreData[loc].ores[target].prob;
-                    const sig = rsMap[target] || "VARIES";
-                    
-                    const div = document.createElement('div');
-                    div.className = "result-card";
-                    div.innerHTML = `
-                        <strong style="text-transform:uppercase;">${loc.replace(/_/g, ' ')}</strong>
-                        <span class="sig-label">PROBABILITY: ${(prob * 100).toFixed(1)}% | SCAN_SIG: ${sig}</span>
-                    `;
-                    out.appendChild(div);
+                out.innerHTML = "";
+                
+                if (!target) {
+                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[ERROR: NO TARGET SELECTED]</p>";
+                    return;
                 }
-            }
+                
+                if (!oreData) {
+                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[ERROR: DATA NOT LOADED]</p>";
+                    return;
+                }
 
-            if (out.innerHTML === "") {
-                out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO DATA DETECTED FOR SELECTED PARAMETERS]</p>";
-            }
-        }
+                for (let loc in oreData) {
+                    // System Sorting Heuristics
+                    const isPyro = loc.includes('PYR') || loc.includes('RAB') || loc.includes('BLOOM');
+                    const isNyx = loc.includes('GLACIUM') || loc.includes('NYX');
+                    
+                    if (system === "PYRO" && !isPyro) continue;
+                    if (system === "NYX" && !isNyx) continue;
+                    if (system === "STANTON" && (isPyro || isNyx)) continue;
+
+                    if (oreData[loc].ores && oreData[loc].ores[target]) {
+                        const prob = oreData[loc].ores[target].prob;
+                        const sig = rsMap[target] || "VARIES";
+                        
+                        const div = document.createElement('div');
+                        div.className = "result-card";
+                        div.innerHTML = `
+                            <strong style="text-transform:uppercase; color:#FFB300;">${loc.replace(/_/g, ' ')}</strong>
+                            <span class="sig-label">DENSITY: ${(prob * 100).toFixed(1)}% | SCAN_SIG: ${sig}</span>
+                        `;
+                        out.appendChild(div);
+                    }
+                }
+
+                if (out.innerHTML === "") {
+                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO DATA DETECTED IN THIS REGION]</p>";
+                }
+            };
+        })();
     </script>
 </body>
 </html>
