@@ -15,8 +15,8 @@
             font-family:inherit; font-size: 16px; outline:none;
             border-radius: 0; -webkit-appearance: none;
         }
-        button { font-weight:bold; text-transform:uppercase; cursor:pointer; background:#111; }
-        button:hover { background:#FFB300; color:#000; }
+        button { font-weight:bold; text-transform:uppercase; cursor:pointer; background:#111; border: 1px solid #FFB300; }
+        button:active { background:#FFB300; color:#000; }
         .result-card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-bottom:10px; background:#050505; }
         .mat-breakdown { color: #888; font-size: 0.85rem; margin-top: 10px; border-top: 1px solid #221100; padding-top: 8px; }
         .mat-row { display: flex; justify-content: space-between; margin-bottom: 5px; padding: 2px 0; border-bottom: 1px solid #111; }
@@ -27,7 +27,7 @@
 </head>
 <body>
     <div class="terminal-header">
-        <h3>> SECTOR_ANALYSIS_v22.2</h3>
+        <h3>> SECTOR_ANALYSIS_v23.0</h3>
         <p id="status">[LINK: ESTABLISHING...]</p>
     </div>
 
@@ -39,107 +39,114 @@
     </select>
 
     <label>Resource_Targets</label>
-    <select class="mat-select"><option value="">- SELECT_ORE_01 -</option><option value="QUANTANIUM">QUANTANIUM</option><option value="LARANITE">LARANITE</option><option value="BEXALITE">BEXALITE</option><option value="TARANITE">TARANITE</option><option value="AGRICIUM">AGRICIUM</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="BORASE">BORASE</option><option value="GOLD">GOLD</option></select>
-    <select class="mat-select"><option value="">- SELECT_ORE_02 -</option><option value="QUANTANIUM">QUANTANIUM</option><option value="LARANITE">LARANITE</option><option value="BEXALITE">BEXALITE</option><option value="TARANITE">TARANITE</option><option value="AGRICIUM">AGRICIUM</option><option value="HEPHAESTANITE">HEPHAESTANITE</option><option value="BORASE">BORASE</option><option value="GOLD">GOLD</option></select>
+    <select class="mat-select">
+        <option value="">- SELECT_ORE_01 -</option>
+        <option value="Quantanium">QUANTANIUM</option>
+        <option value="Laranite">LARANITE</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Taranite">TARANITE</option>
+        <option value="Agricium">AGRICIUM</option>
+        <option value="Hephaestanite">HEPHAESTANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Gold">GOLD</option>
+    </select>
+    <select class="mat-select">
+        <option value="">- SELECT_ORE_02 -</option>
+        <option value="Quantanium">QUANTANIUM</option>
+        <option value="Laranite">LARANITE</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Taranite">TARANITE</option>
+        <option value="Agricium">AGRICIUM</option>
+        <option value="Hephaestanite">HEPHAESTANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Gold">GOLD</option>
+    </select>
 
-    <button id="scan-btn">Initiate Deep Scan</button>
+    <button id="scan-btn" onclick="runDeepScan()">Initiate Deep Scan</button>
     <div id="results"></div>
 
     <script>
-        (function() {
-            let oreData = null;
-            const statusMsg = document.getElementById('status');
-            const scanBtn = document.getElementById('scan-btn');
-            const DATA_URL = 'https://quattrobaje3na-png.github.io/sc-mining-tool/OreLocations.json';
+        let oreData = null;
+        const statusMsg = document.getElementById('status');
+        const DATA_URL = 'https://quattrobaje3na-png.github.io/sc-mining-tool/OreLocations.json';
 
-            function cleanName(raw) {
-                return raw.replace(/^(STA|PYR|NYX)_/g, '')
-                          .replace(/^(MOON|PLANET|LAGRANGE|BELT|ZONE|STATION|MINING_BASE)_/g, '')
-                          .replace(/_/g, ' ')
-                          .trim();
+        function cleanName(raw) {
+            return raw.replace(/^(STA|PYR|NYX)_/g, '')
+                      .replace(/^(MOON|PLANET|LAGRANGE|BELT|ZONE|STATION|MINING_BASE)_/g, '')
+                      .replace(/_/g, ' ')
+                      .trim();
+        }
+
+        fetch(DATA_URL)
+            .then(res => res.json())
+            .then(data => {
+                oreData = data;
+                statusMsg.innerText = "[LINK: ONLINE // ENCRYPTION_STABLE]";
+            })
+            .catch(e => {
+                statusMsg.innerText = "[LINK: ERROR // DATA_NOT_FOUND]";
+                statusMsg.style.color = "#FF0000";
+            });
+
+        function runDeepScan() {
+            const out = document.getElementById('results');
+            const system = document.getElementById('sys-select').value;
+            const selects = document.querySelectorAll('.mat-select');
+            const picks = Array.from(selects).map(s => s.value).filter(v => v);
+            
+            out.innerHTML = "";
+
+            if (!oreData) {
+                alert("Intel data stream not yet established. Wait for green status.");
+                return;
             }
 
-            fetch(DATA_URL)
-                .then(res => res.json())
-                .then(data => {
-                    oreData = data;
-                    statusMsg.innerText = "[LINK: ONLINE // ENCRYPTION_STABLE]";
-                })
-                .catch(e => { 
-                    statusMsg.innerText = "[LINK: ERROR // CHECK_JSON_FILE]";
-                    statusMsg.style.color = "#FF0000";
+            if (picks.length === 0) {
+                out.innerHTML = "<p style='color:#665500;'>[PLEASE SELECT RESOURCE TARGETS]</p>";
+                return;
+            }
+
+            const matches = [];
+
+            for (let loc in oreData) {
+                const locU = loc.toUpperCase();
+                
+                // System Filtering
+                let locSystem = "STANTON"; // Default fallback
+                if (locU.includes("PYR") || locU.includes("RAB-") || locU.includes("RMB-")) locSystem = "PYRO";
+                else if (locU.includes("NYX") || locU.includes("GLACIUM")) locSystem = "NYX";
+
+                if (locSystem !== system) continue;
+
+                let foundOres = [];
+                let topProb = 0;
+
+                picks.forEach(target => {
+                    // Check if loc has ores AND the target exists in that loc
+                    if (oreData[loc].ores && oreData[loc].ores[target]) {
+                        const prob = oreData[loc].ores[target].prob || 0;
+                        foundOres.push({ name: target, rate: (prob * 100).toFixed(1) });
+                        if (prob > topProb) topProb = prob;
+                    }
                 });
 
-            scanBtn.onclick = function() {
-                const out = document.getElementById('results');
-                const system = document.getElementById('sys-select').value;
-                const rawPicks = Array.from(document.querySelectorAll('.mat-select')).map(s => s.value).filter(v => v);
-                
-                out.innerHTML = "";
-                if (!oreData) {
-                    alert("Data not loaded yet. Check top status.");
-                    return;
+                if (foundOres.length > 0) {
+                    matches.push({ name: cleanName(loc), ores: foundOres, sortVal: topProb });
                 }
-                if (rawPicks.length === 0) return;
+            }
 
-                const matches = [];
-
-                // Standardize picks to help match JSON regardless of case
-                const picks = rawPicks.map(p => p.toUpperCase());
-
-                for (let loc in oreData) {
-                    const locU = loc.toUpperCase();
-                    
-                    // SYSTEM FILTERING
-                    let locSystem = "";
-                    if (locU.includes("STA_") || locU.includes("STANTON")) locSystem = "STANTON";
-                    else if (locU.includes("PYR_") || locU.includes("PYRO") || locU.includes("RAB-") || locU.includes("RMB-")) locSystem = "PYRO";
-                    else if (locU.includes("NYX_") || locU.includes("GLACIUM")) locSystem = "NYX";
-
-                    if (locSystem !== system) continue;
-
-                    // LOCATION FILTERING (Whitelisting MOON, PLANET, LAGRANGE, etc.)
-                    const isNamed = locU.includes("MOON") || locU.includes("PLANET") || 
-                                    locU.includes("LAGRANGE") || locU.includes("RAB") || 
-                                    locU.includes("RMB") || locU.includes("HALO") || 
-                                    locU.includes("BELT") || locU.includes("BASE");
-
-                    if (!isNamed) continue;
-
-                    let foundOres = [];
-                    let topProb = 0;
-
-                    // Match logic
-                    if (oreData[loc].ores) {
-                        const jsonOres = oreData[loc].ores;
-                        // Check every ore in the JSON for this location
-                        for (let key in jsonOres) {
-                            if (picks.includes(key.toUpperCase())) {
-                                const prob = jsonOres[key].prob || 0;
-                                foundOres.push({ name: key.toUpperCase(), rate: (prob * 100).toFixed(1) });
-                                if (prob > topProb) topProb = prob;
-                            }
-                        }
-                    }
-
-                    if (foundOres.length > 0) {
-                        matches.push({ name: cleanName(loc), ores: foundOres, sortVal: topProb });
-                    }
-                }
-
+            if (matches.length === 0) {
+                out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO DATA DETECTED FOR SELECTED PARAMETERS]</p>";
+            } else {
                 matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
                     const div = document.createElement('div');
                     div.className = "result-card";
-                    let breakdown = m.ores.map(o => `<div class="mat-row"><span class="mat-name">${o.name}</span><span class="mat-percent">${o.rate}%</span></div>`).join('');
-                    div.innerHTML = `<strong style="text-transform:uppercase;">${m.name}</strong><div class="mat-breakdown">${breakdown}</div>`;
+                    let rows = m.ores.map(o => `<div class="mat-row"><span class="mat-name">${o.name}</span><span class="mat-percent">${o.rate}%</span></div>`).join('');
+                    div.innerHTML = `<strong style="text-transform:uppercase;">${m.name}</strong><div class="mat-breakdown">${rows}</div>`;
                     out.appendChild(div);
                 });
-
-                if (matches.length === 0) {
-                    out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO DATA DETECTED IN THIS REGION]</p>";
-                }
-            };
-        })();
+            }
+        }
     </script>
 </body>
 </html>
