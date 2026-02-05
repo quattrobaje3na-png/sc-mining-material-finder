@@ -15,10 +15,10 @@
             font-family:inherit; font-size: 16px; outline:none;
             border-radius: 0; -webkit-appearance: none;
         }
-        button { font-weight:bold; text-transform:uppercase; cursor:pointer; background:#111; border: 1px solid #FFB300; }
-        button:active { background:#FFB300; color:#000; }
-        .result-card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-bottom:10px; background:#050505; }
-        .mat-breakdown { color: #888; font-size: 0.85rem; margin-top: 10px; border-top: 1px solid #221100; padding-top: 8px; }
+        button { font-weight:bold; text-transform:uppercase; cursor:pointer; background:#111; transition: 0.2s; }
+        button:hover { background:#FFB300; color:#000; }
+        .result-card { border:1px solid #332200; border-left:4px solid #FFB300; padding:15px; margin-bottom:10px; background:#050505; }
+        .mat-breakdown { color: #888; font-size: 0.9rem; margin-top: 10px; border-top: 1px solid #221100; padding-top: 8px; }
         .mat-row { display: flex; justify-content: space-between; margin-bottom: 5px; padding: 2px 0; border-bottom: 1px solid #111; }
         .mat-name { color: #FFB300; text-transform: uppercase; font-weight: bold; }
         .mat-percent { color: #00FF00; font-weight: bold; }
@@ -27,19 +27,12 @@
 </head>
 <body>
     <div class="terminal-header">
-        <h3>> SECTOR_ANALYSIS_v23.0</h3>
+        <h3>> SECTOR_ANALYSIS_v21.1_RESTORED</h3>
         <p id="status">[LINK: ESTABLISHING...]</p>
     </div>
 
-    <label>System_Selection</label>
-    <select id="sys-select">
-        <option value="STANTON">STANTON</option>
-        <option value="PYRO">PYRO</option>
-        <option value="NYX">NYX</option>
-    </select>
-
-    <label>Resource_Targets</label>
-    <select class="mat-select">
+    <label>Select Target Resources</label>
+    <select class="mat-select" id="ore1">
         <option value="">- SELECT_ORE_01 -</option>
         <option value="Quantanium">QUANTANIUM</option>
         <option value="Laranite">LARANITE</option>
@@ -50,7 +43,7 @@
         <option value="Borase">BORASE</option>
         <option value="Gold">GOLD</option>
     </select>
-    <select class="mat-select">
+    <select class="mat-select" id="ore2">
         <option value="">- SELECT_ORE_02 -</option>
         <option value="Quantanium">QUANTANIUM</option>
         <option value="Laranite">LARANITE</option>
@@ -62,7 +55,7 @@
         <option value="Gold">GOLD</option>
     </select>
 
-    <button id="scan-btn" onclick="runDeepScan()">Initiate Deep Scan</button>
+    <button id="scan-btn" onclick="runGlobalScan()">Execute Global Manifest Search</button>
     <div id="results"></div>
 
     <script>
@@ -81,70 +74,67 @@
             .then(res => res.json())
             .then(data => {
                 oreData = data;
-                statusMsg.innerText = "[LINK: ONLINE // ENCRYPTION_STABLE]";
+                statusMsg.innerText = "[LINK: ONLINE // DATABASE_STABLE]";
             })
             .catch(e => {
-                statusMsg.innerText = "[LINK: ERROR // DATA_NOT_FOUND]";
+                statusMsg.innerText = "[LINK: ERROR // CHECK_JSON_FILE]";
                 statusMsg.style.color = "#FF0000";
             });
 
-        function runDeepScan() {
+        function runGlobalScan() {
             const out = document.getElementById('results');
-            const system = document.getElementById('sys-select').value;
-            const selects = document.querySelectorAll('.mat-select');
-            const picks = Array.from(selects).map(s => s.value).filter(v => v);
+            const picks = [
+                document.getElementById('ore1').value,
+                document.getElementById('ore2').value
+            ].filter(v => v !== "");
             
             out.innerHTML = "";
-
+            
             if (!oreData) {
-                alert("Intel data stream not yet established. Wait for green status.");
+                alert("Database not synced. Please refresh.");
                 return;
             }
 
-            if (picks.length === 0) {
-                out.innerHTML = "<p style='color:#665500;'>[PLEASE SELECT RESOURCE TARGETS]</p>";
-                return;
-            }
+            if (picks.length === 0) return;
 
             const matches = [];
 
             for (let loc in oreData) {
-                const locU = loc.toUpperCase();
-                
-                // System Filtering
-                let locSystem = "STANTON"; // Default fallback
-                if (locU.includes("PYR") || locU.includes("RAB-") || locU.includes("RMB-")) locSystem = "PYRO";
-                else if (locU.includes("NYX") || locU.includes("GLACIUM")) locSystem = "NYX";
-
-                if (locSystem !== system) continue;
-
-                let foundOres = [];
-                let topProb = 0;
+                let locationOres = [];
+                let highProb = 0;
 
                 picks.forEach(target => {
-                    // Check if loc has ores AND the target exists in that loc
                     if (oreData[loc].ores && oreData[loc].ores[target]) {
-                        const prob = oreData[loc].ores[target].prob || 0;
-                        foundOres.push({ name: target, rate: (prob * 100).toFixed(1) });
-                        if (prob > topProb) topProb = prob;
+                        const val = oreData[loc].ores[target].prob;
+                        if (val > highProb) highProb = val;
+                        locationOres.push({ name: target, rate: (val * 100).toFixed(1) });
                     }
                 });
 
-                if (foundOres.length > 0) {
-                    matches.push({ name: cleanName(loc), ores: foundOres, sortVal: topProb });
+                if (locationOres.length > 0) {
+                    matches.push({ name: cleanName(loc), ores: locationOres, sortVal: highProb });
                 }
             }
 
+            matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
+                const div = document.createElement('div');
+                div.className = "result-card";
+                let breakdownHtml = m.ores.map(o => `
+                    <div class="mat-row">
+                        <span class="mat-name">${o.name}</span>
+                        <span class="mat-percent">${o.rate}%</span>
+                    </div>
+                `).join('');
+
+                div.innerHTML = `
+                    <strong style="text-transform:uppercase;">${m.name}</strong>
+                    <div class="mat-breakdown">${breakdownHtml}</div>
+                `;
+                out.appendChild(div);
+            });
+
             if (matches.length === 0) {
-                out.innerHTML = "<p style='font-size:11px; color:#443300;'>[NO DATA DETECTED FOR SELECTED PARAMETERS]</p>";
-            } else {
-                matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = "result-card";
-                    let rows = m.ores.map(o => `<div class="mat-row"><span class="mat-name">${o.name}</span><span class="mat-percent">${o.rate}%</span></div>`).join('');
-                    div.innerHTML = `<strong style="text-transform:uppercase;">${m.name}</strong><div class="mat-breakdown">${rows}</div>`;
-                    out.appendChild(div);
-                });
+                out.innerHTML = "<p style='color:#665500; font-size:12px;'>[NO RESULTS FOUND IN CURRENT MANIFEST]</p>";
             }
         }
     </script>
