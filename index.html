@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v29.5</h3>
+        <h3>> INTEL_v29.6</h3>
         <p id="status">ESTABLISHING DATA LINK...</p>
     </div>
 
@@ -63,10 +63,8 @@
     <script>
         let oreData, sysGroups, refMapping;
         const statusText = document.getElementById('status');
-        
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Added specific URI encoding for the filename with a space
         Promise.all([
             fetch(BASE_URL + 'OreLocations.json', {cache: "no-store"}).then(r => r.json()),
             fetch(BASE_URL + 'system%20sorting.json', {cache: "no-store"}).then(r => r.json()),
@@ -75,9 +73,8 @@
             [oreData, sysGroups, refMapping] = responses;
             statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
         }).catch(err => {
-            statusText.innerText = "SYNC_ERROR: UNABLE TO REACH REPOSITORY FILES";
+            statusText.innerText = "SYNC_ERROR";
             statusText.style.color = "red";
-            console.error('Failed to load:', err);
         });
 
         function scan() {
@@ -92,33 +89,41 @@
             const activeGroup = sysGroups.star_system_groups[system] || [];
 
             for (let loc in oreData) {
+                // Check if location is in the selected system group
                 if (!activeGroup.includes(loc)) continue;
 
                 let foundOres = [];
                 let maxProb = 0;
 
                 picks.forEach(p => {
-                    if (oreData[loc].ores && oreData[loc].ores[p]) {
-                        let prob = oreData[loc].ores[p].prob || 0;
-                        foundOres.push({ name: p.toUpperCase(), val: (prob * 100).toFixed(1) });
+                    const locOres = oreData[loc].ores || {};
+                    // Match the material exactly OR case-insensitive check
+                    const matchKey = Object.keys(locOres).find(k => k.toLowerCase() === p.toLowerCase());
+                    
+                    if (matchKey) {
+                        let prob = locOres[matchKey].prob || 0;
+                        foundOres.push({ name: matchKey.toUpperCase(), val: (prob * 100).toFixed(1) });
                         if (prob > maxProb) maxProb = prob;
                     }
                 });
 
                 if (foundOres.length > 0) {
-                    // Use the reference.json map for player-recognized names
                     const friendlyName = refMapping.location_mapping[loc] || loc;
                     matches.push({ name: friendlyName, ores: foundOres, sortVal: maxProb });
                 }
             }
 
-            matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
-                const card = document.createElement('div');
-                card.className = "card";
-                let rows = m.ores.map(o => `<div class="row"><span>${o.name}</span><span>${o.val}%</span></div>`).join('');
-                card.innerHTML = `<strong>${m.name}</strong>${rows}`;
-                out.appendChild(card);
-            });
+            if (matches.length === 0) {
+                out.innerHTML = "<p style='color:#665500;'>NO DATA FOUND FOR SELECTION</p>";
+            } else {
+                matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
+                    const card = document.createElement('div');
+                    card.className = "card";
+                    let rows = m.ores.map(o => `<div class="row"><span>${o.name}</span><span>${o.val}%</span></div>`).join('');
+                    card.innerHTML = `<strong>${m.name}</strong>${rows}`;
+                    out.appendChild(card);
+                });
+            }
         }
     </script>
 </body>
