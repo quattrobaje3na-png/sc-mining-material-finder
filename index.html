@@ -28,8 +28,8 @@
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill backup">DB: SYNCING...</div>
-        <h2 style="margin:0;">> MINING_INTEL_v48.8</h2>
+        <div id="data-status" class="status-pill backup">INTEL_SYNC_REQUIRED</div>
+        <h2 style="margin:0;">> MINING_INTEL_v48.9</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -40,37 +40,38 @@
         <option value="Nyx">NYX</option>
     </select>
 
-    <label>Material_Priority_01</label>
+    <label>Priority_Material_01</label>
     <select class="ore-sel"></select>
-    <label>Material_Priority_02</label>
+    <label>Priority_Material_02</label>
     <select class="ore-sel"></select>
-    <label>Material_Priority_03</label>
+    <label>Priority_Material_03</label>
     <select class="ore-sel"></select>
 
     <button onclick="scan()">Initiate Deep Scan</button>
     <div id="results"></div>
 
     <script>
-        const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
-        
+        // HUD Data Mapping
         const ROCK_MAP = {
+            "Quantainium": { type: "Q-Type", sig: 4870 },
             "Laranite": { type: "P/Q-Type", sig: "4750/4870" },
-            "Quantainium": { type: "Q-Type", sig: "4870" },
-            "Hephaestanite": { type: "C-Type", sig: "4700" },
+            "Agricium": { type: "M-Type", sig: 4850 },
+            "Taranite": { type: "M-Type", sig: 4850 },
+            "Hephaestanite": { type: "C-Type", sig: 4700 },
+            "Borase": { type: "C-Type", sig: 4700 },
             "Beryl": { type: "S/E-Type", sig: "4720/4900" },
-            "Agricium": { type: "M-Type", sig: "4850" },
-            "Taranite": { type: "M-Type", sig: "4850" },
-            "Titanium": { type: "E-Type", sig: "4900" },
-            "Borase": { type: "C-Type", sig: "4700" },
-            "Tungsten": { type: "P-Type", sig: "4750" },
-            "Copper": { type: "P-Type", sig: "4750" },
+            "Titanium": { type: "E-Type", sig: 4900 },
+            "Tungsten": { type: "P-Type", sig: 4750 },
+            "Copper": { type: "P-Type", sig: 4750 },
             "Quartz": { type: "C/P/Q-Type", sig: "4700-4870" }
         };
+
+        const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
 
         let oreData, sortingData, referenceData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Populate menus immediately
+        // Immediate Dropdown Population
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -79,7 +80,7 @@
         async function init() {
             const status = document.getElementById('data-status');
             try {
-                // Fetch All Config Files
+                // Fetch All Configuration Files
                 const [sRes, rRes] = await Promise.all([
                     fetch(BASE_URL + 'system_sorting.json'),
                     fetch(BASE_URL + 'reference.json')
@@ -87,7 +88,7 @@
                 sortingData = await sRes.json();
                 referenceData = await rRes.json();
 
-                // Fetch Ore Data (Live Priority)
+                // Load Ore Data
                 try {
                     const oRes = await fetch(BASE_URL + 'ore_locations_live.json', { cache: "no-store" });
                     if (!oRes.ok) throw new Error();
@@ -114,11 +115,11 @@
             if (!oreData || !sortingData || !referenceData) return;
 
             for (let locId in oreData) {
-                // 1. Resolve Display Name from reference.json
-                // Assumes reference.json is { "HUR": "Hurston", "LYR": "Lyria", ... }
-                let displayName = referenceData[locId] || locId;
+                // 1. APPLY NAME CORRECTION FROM REFERENCE.JSON
+                // This checks if 'HUR' has a mapping like 'HURSTON'
+                const displayLabel = referenceData[locId] || locId;
 
-                // 2. Resolve System from system_sorting.json
+                // 2. Resolve System for Filtering
                 let locSystem = "UNKNOWN";
                 if (sortingData.star_system_groups) {
                     for (let sys in sortingData.star_system_groups) {
@@ -131,7 +132,7 @@
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
-                // 3. Match Ores
+                // 3. Process Ores
                 let matches = [];
                 picks.forEach(p => {
                     const locOres = oreData[locId].ores || oreData[locId];
@@ -165,7 +166,7 @@
 
                     card.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span class="loc-title">${displayName.toUpperCase()}</span>
+                            <span class="loc-title">${displayLabel.toUpperCase()}</span>
                             <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px;">${locSystem.toUpperCase()}</span>
                         </div>
                         ${rows}
