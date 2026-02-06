@@ -5,15 +5,11 @@ import os
 URL = "https://api.regolith.rocks"
 TOKEN = os.environ.get("REGOLITH_TOKEN")
 
-VERIFIED_SIGS = {
-    "ITYPE": 4000, "CTYPE": 4700, "STYPE": 4720, 
-    "PTYPE": 4750, "MTYPE": 4850, "QTYPE": 4870, "ETYPE": 4900
-}
-
-# ONLY query the 'data' field since 'name', 'id', and 'location' are blocked
+# Target Query: Just scoutingFind and the data blob
 QUERY = """
 query {
   scoutingFind {
+    dataName
     data
   }
 }
@@ -21,13 +17,13 @@ query {
 
 def sync():
     if not TOKEN:
-        print("!! FAIL: REGOLITH_TOKEN missing !!")
+        print("!! CRITICAL: REGOLITH_TOKEN secret missing in GitHub Settings !!")
         return
 
     headers = {"x-api-key": TOKEN.strip(), "Content-Type": "application/json"}
     
     try:
-        print("Attempting 'Blind Grab' of scoutingFind data...")
+        print("Authenticating with Regolith...")
         response = requests.post(URL, headers=headers, json={"query": QUERY}, timeout=20)
         result = response.json()
 
@@ -37,49 +33,40 @@ def sync():
 
         raw_entries = result.get("data", {}).get("scoutingFind", [])
         if not raw_entries:
-            print("!! FAIL: No data entries found !!")
+            print("!! SUCCESSFUL CONNECTION, BUT NO DATA FOUND !!")
             return
 
-        print(f"SUCCESS: Captured {len(raw_entries)} blobs. Unpacking...")
+        print(f"SUCCESS: Captured {len(raw_entries)} locations. Processing Ores...")
 
-        ore_data = {}
-        rock_data = {}
+        ore_output = {}
 
         for entry in raw_entries:
-            # Unpack the scalar data
+            # Unpack the JSON blob inside 'data'
             content = entry.get("data", {})
             if isinstance(content, str):
-                try: content = json.loads(content)
-                except: content = {}
+                try: 
+                    content = json.loads(content)
+                except: 
+                    content = {}
 
-            # IMPORTANT: We hunt for the name INSIDE the data object
-            # Common keys in Regolith's data blob are 'dataName', 'location', or 'id'
-            loc_name = content.get("dataName") or content.get("location") or content.get("id") or "UNKNOWN_LOC"
+            # Use dataName as the primary key (e.g., 'Lyria', 'Wala')
+            loc_name = entry.get("dataName") or "UNKNOWN_LOC"
             
-            # 1. Process Ores
-            ore_list = content.get("ores", [])
-            ore_data[loc_name] = {
-                "ores": {o["name"].capitalize(): o["prob"] for o in ore_list if "name" in o}
-            }
-
-            # 2. Process Rock Signatures
-            is_p = not any(k in str(loc_name).upper() for k in ['HALO', 'BELT', 'L1', 'L2', 'L3', 'L4', 'L5'])
-            rock_types = content.get("rockTypes", [])
-            
-            rock_data[loc_name] = {
-                "is_planetary": is_p,
-                "signatures": {"GROUND": 4000, "HAND": 3000} if is_p else {
-                    rt.get("type", "").upper(): VERIFIED_SIGS.get(rt.get("type", "").upper() + "TYPE", 4870)
-                    for rt in rock_types if "type" in rt
+            # Extract Ores only
+            ores = content.get("ores", [])
+            if ores:
+                ore_output[loc_name] = {
+                    "ores": {o["name"].capitalize(): o["prob"] for o in ores if "name" in o}
                 }
-            }
 
-        with open("ore_locations.json", "w") as f: json.dump(ore_data, f, indent=2)
-        with open("rock.json", "w") as f: json.dump(rock_data, f, indent=2)
-        print(f"Verification: Successfully extracted {len(ore_data)} locations from blobs.")
+        # Save specifically to ore_locations.json
+        with open("ore_locations.json", "w") as f:
+            json.dump(ore_output, f, indent=2)
+            
+        print(f"DONE: Updated {len(ore_output)} entries in ore_locations.json.")
 
     except Exception as e:
-        print(f"!! CRITICAL ERROR: {str(e)} !!")
+        print(f"!! FATAL ERROR: {str(e)} !!")
 
 if __name__ == "__main__":
     sync()
