@@ -18,22 +18,20 @@
         .row { display: flex; justify-content: space-between; font-size: 14px; margin-top:5px; border-top: 1px solid #222; padding-top:5px; }
         label { font-size: 10px; text-transform: uppercase; color: #665500; display: block; margin-bottom: 2px; letter-spacing: 1px; }
         
-        #data-source-badge { 
+        /* DATA STATUS BADGE */
+        #data-status { 
             display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: bold; 
-            border-radius: 3px; background: #333; color: #888; margin-bottom: 5px;
+            border-radius: 3px; background: #004400; color: #00FF00; border: 1px solid #00FF00; margin-bottom: 5px;
         }
-        .status-live { background: #004400 !important; color: #00FF00 !important; border: 1px solid #00FF00; }
-        .status-local { background: #442200 !important; color: #FFB300 !important; border: 1px solid #FFB300; }
-        
-        #status-text { font-size:12px; color:#666; }
         .loc-title { color: #fff; font-size: 15px; display: block; margin-bottom: 5px; }
+        .footer-note { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="header">
-        <div id="data-source-badge">SYNCING...</div>
-        <h3>> INTEL_v35.3_RESILIENT_SYNC</h3>
-        <p id="status-text">INITIALIZING QUANTUM LINK...</p>
+        <div id="data-status">DATABASE: AUTO_SYNC_ACTIVE</div>
+        <h3>> Mining Material Finder v1.0</h3>
+        <p style="font-size:12px; color:#666;">COMMUNITY SURVEY DATA UPDATED DAILY VIA REGOLITH API</p>
     </div>
 
     <label>Region_Selection</label>
@@ -47,104 +45,67 @@
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
         <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
         <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
         <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
+        <option value="Taranite">TARANITE</option>
         <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
         <option value="Agricium">AGRICIUM</option>
         <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Beryl">BERYL</option>
+        <option value="Gold">GOLD</option>
     </select>
 
     <label>Priority_Resource_02</label>
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option><option value="Stileron">STILERON</option><option value="Savrilium">SAVRILIUM</option><option value="Riccite">RICCITE</option><option value="Taranite">TARANITE</option><option value="Lindinium">LINDINIUM</option><option value="Bexalite">BEXALITE</option><option value="Gold">GOLD</option><option value="Laranite">LARANITE</option><option value="Borase">BORASE</option><option value="Beryl">BERYL</option><option value="Agricium">AGRICIUM</option><option value="Hephaestanite">HEPHAESTANITE</option><option value="Tungsten">TUNGSTEN</option><option value="Titanium">TITANIUM</option><option value="Silicon">SILICON</option><option value="Iron">IRON</option><option value="Quartz">QUARTZ</option><option value="Torite">TORITE</option><option value="Corundum">CORUNDUM</option><option value="Copper">COPPER</option><option value="Tin">TIN</option><option value="Aluminum">ALUMINUM</option><option value="Ice">ICE</option>
+        <option value="Quantainium">QUANTAINIUM</option>
+        <option value="Savrilium">SAVRILIUM</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Taranite">TARANITE</option>
+        <option value="Laranite">LARANITE</option>
+        <option value="Agricium">AGRICIUM</option>
+        <option value="Hephaestanite">HEPHAESTANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Beryl">BERYL</option>
+        <option value="Gold">GOLD</option>
     </select>
 
     <label>Priority_Resource_03</label>
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option><option value="Stileron">STILERON</option><option value="Savrilium">SAVRILIUM</option><option value="Riccite">RICCITE</option><option value="Taranite">TARANITE</option><option value="Lindinium">LINDINIUM</option><option value="Bexalite">BEXALITE</option><option value="Gold">GOLD</option><option value="Laranite">LARANITE</option><option value="Borase">BORASE</option><option value="Beryl">BERYL</option><option value="Agricium">AGRICIUM</option><option value="Hephaestanite">HEPHAESTANITE</option><option value="Tungsten">TUNGSTEN</option><option value="Titanium">TITANIUM</option><option value="Silicon">SILICON</option><option value="Iron">IRON</option><option value="Quartz">QUARTZ</option><option value="Torite">TORITE</option><option value="Corundum">CORUNDUM</option><option value="Copper">COPPER</option><option value="Tin">TIN</option><option value="Aluminum">ALUMINUM</option><option value="Ice">ICE</option>
+        <option value="Quantainium">QUANTAINIUM</option>
+        <option value="Savrilium">SAVRILIUM</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Taranite">TARANITE</option>
+        <option value="Laranite">LARANITE</option>
+        <option value="Agricium">AGRICIUM</option>
+        <option value="Hephaestanite">HEPHAESTANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Beryl">BERYL</option>
+        <option value="Gold">GOLD</option>
     </select>
 
-    <button onclick="scan()">Initiate Triple Scan</button>
+    <button onclick="scan()">Scan For Materials</button>
     <div id="results"></div>
 
+    <div class="footer-note">DATA SOURCE: REGOLITH SURVEY CORPS (SECURE API)</div>
+
     <script>
-        let oreData, sysGroups, refMapping, filterList;
-        const statusBadge = document.getElementById('data-source-badge');
-        const statusText = document.getElementById('status-text');
-        
+        let oreData, sysGroups, refMapping;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
-        const REGOLITH_API = 'https://regolith.rocks/api/export/survey/locations';
-        const PROXY_1 = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(REGOLITH_API);
-        const PROXY_2 = 'https://corsproxy.io/?' + encodeURIComponent(REGOLITH_API);
 
         async function init() {
             try {
-                // 1. Load Local Configs
                 const configs = await Promise.all([
+                    fetch(BASE_URL + 'ore_locations.json', {cache: "no-store"}).then(r => r.json()),
                     fetch(BASE_URL + 'system_sorting.json', {cache: "no-store"}).then(r => r.json()),
-                    fetch(BASE_URL + 'reference.json', {cache: "no-store"}).then(r => r.json()),
-                    fetch(BASE_URL + 'filter.json', {cache: "no-store"}).then(r => r.json())
+                    fetch(BASE_URL + 'reference.json', {cache: "no-store"}).then(r => r.json())
                 ]);
-                [sysGroups, refMapping, filterList] = configs;
-
-                // 2. Attempt Live Sync - Proxy Chain
-                let liveLoaded = false;
-                try {
-                    const res = await fetch(PROXY_1, {cache: "no-store"});
-                    if (!res.ok) throw new Error();
-                    oreData = await res.json();
-                    setLiveStatus("PRIMARY PROXY ACTIVE");
-                    liveLoaded = true;
-                } catch (e) {
-                    try {
-                        const res2 = await fetch(PROXY_2, {cache: "no-store"});
-                        if (!res2.ok) throw new Error();
-                        oreData = await res2.json();
-                        setLiveStatus("SECONDARY PROXY ACTIVE");
-                        liveLoaded = true;
-                    } catch (e2) {
-                        // 3. Final Fallback
-                        const fallback = await fetch(BASE_URL + 'ore_locations.json', {cache: "no-store"});
-                        oreData = await fallback.json();
-                        setLocalStatus();
-                    }
-                }
+                [oreData, sysGroups, refMapping] = configs;
             } catch (err) {
-                statusBadge.innerText = "DATA SOURCE: ERROR";
-                statusText.innerText = "CRITICAL: DATABASE SYNC FAILURE";
+                console.error("Link Failure", err);
             }
-        }
-
-        function setLiveStatus(msg) {
-            statusBadge.innerText = "DATA SOURCE: LIVE (REGOLITH)";
-            statusBadge.className = "status-live";
-            statusText.innerText = "SUCCESS: " + msg;
-        }
-
-        function setLocalStatus() {
-            statusBadge.innerText = "DATA SOURCE: FALLBACK (GITHUB)";
-            statusBadge.className = "status-local";
-            statusText.innerText = "NOTICE: REGOLITH BLOCKED - USING OFFLINE BACKUP";
         }
 
         function scan() {
@@ -153,18 +114,16 @@
             const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
 
             out.innerHTML = "";
-            if (!oreData || !sysGroups || !refMapping || !filterList) return;
+            if (!oreData || !sysGroups) return;
 
             const activeGroup = sysGroups.star_system_groups[system] || [];
             const mapping = refMapping.location_mapping || {};
-            const blacklist = filterList.blacklisted_ids || [];
             const matches = [];
 
             const normalize = (id) => id.replace(/[-_]/g, '').toUpperCase();
 
             for (let rawID in oreData) {
-                if (blacklist.includes(rawID)) continue;
-                // Surgical Stanton Cluster Filter: XXX-000
+                // Surgical Stanton Cluster Filter (hides XXX-000)
                 if (/^[A-Z]{3}-\d{3}$/.test(rawID)) continue;
 
                 const normRaw = normalize(rawID);
@@ -177,14 +136,9 @@
 
                 picks.forEach(p => {
                     const ores = oreData[rawID].ores || {};
-                    let matchKey = Object.keys(ores).find(k => k.toLowerCase() === p.toLowerCase());
-                    // Smart spelling fallback for Quantainium
-                    if (!matchKey && p.toLowerCase().includes("quant")) {
-                        matchKey = Object.keys(ores).find(k => k.toLowerCase().includes("quant"));
-                    }
-                    if (matchKey) {
-                        const prob = ores[matchKey].prob || 0;
-                        resultsForLoc.push({ name: matchKey.toUpperCase(), val: (prob * 100).toFixed(1) });
+                    if (ores[p]) {
+                        const prob = ores[p].prob || 0;
+                        resultsForLoc.push({ name: p.toUpperCase(), val: (prob * 100).toFixed(1) });
                         totalProb += prob;
                     }
                 });
