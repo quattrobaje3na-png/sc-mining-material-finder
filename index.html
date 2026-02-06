@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citizen Starter Guide - Mining HUD v51.9</title>
+    <title>Citizen Starter Guide - Mining HUD v52.0</title>
     <style>
         body { background:#000; color:#FFB300; font-family: monospace; padding:15px; }
         .header { border-bottom:1px solid #332200; margin-bottom:20px; }
@@ -26,8 +26,8 @@
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill live">HUD: ORBITAL_LAGRANGE_SYNC_v51.9</div>
-        <h2 style="margin:0;">> MINING_INTEL_v51.9</h2>
+        <div id="data-status" class="status-pill live">HUD: SPACE_BYPASS_v52.0</div>
+        <h2 style="margin:0;">> MINING_INTEL_v52.0</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -75,18 +75,18 @@
             const locUp = locId.toUpperCase();
             const isNyx = system === "Nyx";
             
-            // 1. HDMS/HDSF are ALWAYS Ground locations.
+            // 1. HDMS/HDSF are physically on the ground.
             const isHDMS = locUp.includes("HDMS-") || locUp.includes("HDSF-") || locUp.includes("HDMO-");
             
-            // 2. ORBITAL CHECK: Lagrange ( L1-L5), RMB/RAB Bases, BGR Clusters, and R0 Stations.
-            const isOrbital = locUp.includes(" L") || locUp.includes("-L") || 
-                              locUp.includes("RMB-") || locUp.includes("RAB-") || 
-                              locUp.includes("BGR-") || locUp.startsWith("R0");
+            // 2. SPACE BYPASS: Explicitly identify anything in orbit.
+            const isSpace = locUp.includes(" L") || locUp.includes("-L") || 
+                            locUp.includes("RMB-") || locUp.includes("RAB-") || 
+                            locUp.includes("BGR-") || locUp.startsWith("R0") ||
+                            locUp.includes("BELT") || locUp.includes("RING") ||
+                            locUp.includes("HALO") || locUp.includes("CLUSTER");
             
-            // 3. FINAL SURFACE LOGIC: Force surface if HDMS. Bypass if Nyx or Orbital or Space Keyword.
-            const isSurface = !isNyx && (isHDMS || (!isOrbital && 
-                              !locUp.includes("HALO") && !locUp.includes("CLUSTER") && 
-                              !locUp.startsWith("ST-") && !locUp.includes("BELT")));
+            // 3. FINAL LOGIC: It's only a surface if it's NOT Nyx, NOT Space, OR it is an HDMS station.
+            const isSurface = !isNyx && (isHDMS || !isSpace);
             
             const source = isSurface ? sysData.surface_deposits : sysData.asteroid_types;
             if (!source) return { type: "GENERIC", sig: "SCAN" };
@@ -159,6 +159,7 @@
                 }
             }
 
+            // RANK BY TOTAL PROBABILITY PERCENTAGE
             resultsArray.sort((a, b) => b.weight - a.weight);
 
             resultsArray.forEach(res => {
