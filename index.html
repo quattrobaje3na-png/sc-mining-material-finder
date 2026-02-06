@@ -30,10 +30,10 @@
 <body>
     <div class="header">
         <div id="data-status" class="status-pill backup">INITIATING_SYSTEM...</div>
-        <h2 style="margin:0;">> MINING_INTEL_v45.4</h2>
+        <h2 style="margin:0;">> MINING_INTEL_v45.5</h2>
     </div>
 
-    <label>Target_System</label>
+    <label>Target_Star_System</label>
     <select id="sys-select">
         <option value="ALL">ALL_KNOWN_SYSTEMS</option>
         <option value="Stanton">STANTON</option>
@@ -41,14 +41,14 @@
         <option value="Nyx">NYX</option>
     </select>
 
-    <label>Material_Priority 01</label>
-    <select class="ore-sel" id="ore1"></select>
+    <label>Material_Priority_01</label>
+    <select class="ore-sel"></select>
 
-    <label>Material_Priority 02</label>
-    <select class="ore-sel" id="ore2"></select>
+    <label>Material_Priority_02</label>
+    <select class="ore-sel"></select>
 
-    <label>Material_Priority 03</label>
-    <select class="ore-sel" id="ore3"></select>
+    <label>Material_Priority_03</label>
+    <select class="ore-sel"></select>
 
     <button onclick="scan()">Initiate Deep Scan</button>
 
@@ -69,8 +69,7 @@
             const status = document.getElementById('data-status');
             
             try {
-                // 1. Load Filter and Sorting first
-                log("Loading configuration files...");
+                log("Loading configuration: filter.json & system_sorting.json...");
                 const [fRes, sRes] = await Promise.all([
                     fetch(BASE_URL + 'filter.json'),
                     fetch(BASE_URL + 'system_sorting.json')
@@ -79,31 +78,30 @@
                 filterData = await fRes.json();
                 sortingData = await sRes.json();
 
-                // 2. Populate Dropdowns using filter.json
+                // Populate all three Material priority dropdowns
                 const materials = filterData.materials || [];
                 document.querySelectorAll('.ore-sel').forEach(s => {
                     s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
                         materials.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
                 });
 
-                // 3. Load Ore Data (Live First)
                 log("Checking for Live Sync Data...");
                 let res = await fetch(BASE_URL + 'ore_locations_live.json', {cache: "no-store"});
                 if (!res.ok) throw new Error();
                 oreData = await res.json();
                 status.className = "status-pill live";
                 status.innerText = "DB: LIVE_ACTIVE";
-                log(`Success! Loaded ${Object.keys(oreData).length} locations.`);
+                log(`Success! Loaded ${Object.keys(oreData).length} locations from API.`);
             } catch (e) {
-                log("Live path failed or config missing, attempting Master fallback...");
+                log("Live path failed, falling back to Master files...");
                 try {
                     let res = await fetch(BASE_URL + 'ore_locations.json');
                     oreData = await res.json();
                     status.className = "status-pill backup";
                     status.innerText = "DB: MASTER_FALLBACK";
-                    log("Using master verified database.");
+                    log("Verified master database loaded.");
                 } catch (err) {
-                    log("CRITICAL ERROR: Failed to load any database.");
+                    log("CRITICAL ERROR: Failed to load any mining database.");
                 }
             }
         }
@@ -114,21 +112,28 @@
             const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
             
             out.innerHTML = "";
-            if (!oreData || !sortingData) { log("Scan aborted: Config files not ready."); return; }
+            if (!oreData || !sortingData) { log("Scan aborted: Files missing."); return; }
 
             let found = 0;
             for (let loc in oreData) {
-                // Get system from system_sorting.json
-                const locSystem = sortingData[loc] || "Stanton";
+                // Mapping system groups from system_sorting.json
+                let locSystem = "Stanton"; 
+                if (sortingData.star_system_groups) {
+                    for (let sys in sortingData.star_system_groups) {
+                        if (sortingData.star_system_groups[sys].includes(loc)) {
+                            locSystem = sys;
+                            break;
+                        }
+                    }
+                }
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
                 let matches = [];
                 picks.forEach(p => {
-                    const ores = oreData[loc].ores || {};
-                    // Match key from JSON
-                    if (ores[p]) {
-                        matches.push({ name: p.toUpperCase(), prob: (ores[p] * 100).toFixed(1) });
+                    const locOres = oreData[loc].ores || {};
+                    if (locOres[p]) {
+                        matches.push({ name: p.toUpperCase(), prob: (locOres[p] * 100).toFixed(1) });
                     }
                 });
 
@@ -145,7 +150,7 @@
             if (found === 0) out.innerHTML = "<p style='color:#666; text-align:center;'>NO MINERAL SIGNATURES DETECTED</p>";
         }
 
-        init();
+            init();
     </script>
 </body>
 </html>
