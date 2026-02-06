@@ -2,13 +2,12 @@ import requests
 import json
 import os
 
-# API Configuration
-url = "https://api.regolith.rocks"
-# Pulls the token from your GitHub Secrets
-api_key = os.environ.get("REGOLITH_TOKEN")
+# API Target
+URL = "https://api.regolith.rocks"
+TOKEN = os.environ.get("REGOLITH_TOKEN")
 
-# The GraphQL query to get location data (Adjusted to get survey info)
-query = """
+# This query pulls every location with its ore probabilities
+QUERY = """
 query {
   surveyLocations {
     id
@@ -20,46 +19,50 @@ query {
 }
 """
 
-headers = {
-    "x-api-key": api_key,
-    "Content-Type": "application/json"
-}
-
 def sync():
-    if not api_key:
-        print("Error: REGOLITH_TOKEN not found in environment.")
+    if not TOKEN:
+        print("CRITICAL_ERROR: REGOLITH_TOKEN secret is missing in GitHub Settings.")
         return
 
-    payload = {"query": query.replace("\n", " ")}
+    headers = {
+        "x-api-key": TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {"query": QUERY.replace("\n", " ")}
     
     try:
-        print("Initiating Authenticated Quantum Link...")
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
+        print("INITIATING SECURE QUANTUM LINK...")
+        response = requests.post(URL, headers=headers, json=payload, timeout=20)
         response.raise_for_status()
         
         data = response.json()
         
-        # Format the data to match your tool's ore_locations.json structure
-        raw_locations = data.get("data", {}).get("surveyLocations", [])
-        processed_data = {}
+        # Check if the API returned an error message
+        if "errors" in data:
+            print(f"API_ERROR: {data['errors'][0]['message']}")
+            return
 
+        raw_locations = data.get("data", {}).get("surveyLocations", [])
+        
+        # Transform into the format your tool's scan() function needs
+        processed = {}
         for loc in raw_locations:
             loc_id = loc["id"]
-            processed_data[loc_id] = {"ores": {}}
+            processed[loc_id] = {"ores": {}}
             for ore in loc.get("ores", []):
+                # Standardize Quantainium spelling
                 name = ore["name"].capitalize()
                 if name == "Quantanium": name = "Quantainium"
-                processed_data[loc_id]["ores"][name] = {"prob": ore["prob"]}
+                processed[loc_id]["ores"][name] = {"prob": ore["prob"]}
 
         with open("ore_locations.json", "w") as f:
-            json.dump(processed_data, f, indent=2)
+            json.dump(processed, f, indent=2)
             
-        print(f"Sync Complete: {len(processed_data)} locations updated via Secure API.")
+        print(f"SYNC_COMPLETE: {len(processed)} LOCATIONS UPDATED VIA SECURE LINK.")
 
     except Exception as e:
-        print(f"Sync Failed: {e}")
-        if response.text:
-            print(f"Server Response: {response.text}")
+        print(f"CONNECTION_FAILURE: {e}")
         exit(1)
 
 if __name__ == "__main__":
