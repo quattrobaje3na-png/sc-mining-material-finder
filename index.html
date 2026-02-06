@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citizen Starter Guide - Mining HUD v52.1</title>
+    <title>Mining HUD v52.2</title>
     <style>
         body { background:#000; color:#FFB300; font-family: monospace; padding:15px; }
         .header { border-bottom:1px solid #332200; margin-bottom:20px; }
@@ -26,8 +26,8 @@
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill live">HUD: DIRECT_LOGIC_v52.1</div>
-        <h2 style="margin:0;">> MINING_INTEL_v52.1</h2>
+        <div id="data-status" class="status-pill live">HUD: SIG_RECOVERY_v52.2</div>
+        <h2 style="margin:0;">> MINING_INTEL_v52.2</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -38,7 +38,7 @@
         <option value="Nyx">NYX</option>
     </select>
 
-    <label>Priority_Materials (Ranked by Odds)</label>
+    <label>Target_Materials (Ranked by Odds)</label>
     <select class="ore-sel"></select>
     <select class="ore-sel"></select>
     <select class="ore-sel"></select>
@@ -74,29 +74,32 @@
 
             const rawId = locId.toUpperCase();
             const name = displayName.toUpperCase();
-            const isNyx = system === "Nyx";
             
-            // 1. SPACE/ORBITAL CHECK: Direct match for keywords in ID or Name
+            // 1. SPACE KEYWORDS
             const spaceKeywords = ["BELT", "RING", "HALO", "CLUSTER", "RMB-", "RAB-", "BGR-", " L1", " L2", " L3", " L4", " L5", "-L1", "-L2", "-L3", "-L4", "-L5"];
             const isSpace = spaceKeywords.some(key => rawId.includes(key) || name.includes(key)) || rawId.startsWith("R0");
-            
-            // 2. SURFACE CHECK: Force surface if it's NOT Nyx AND (NOT Space OR it's an HDMS station)
             const isHDMS = rawId.includes("HDMS") || name.includes("HDMS") || rawId.includes("HDSF");
-            const isSurface = !isNyx && (isHDMS || !isSpace);
+
+            // 2. PREFER ASTEROID FOR SPACE/NYX, OTHERWISE SURFACE
+            const useAsteroid = (isSpace || system === "Nyx") && !isHDMS;
+            const source = useAsteroid ? sysData.asteroid_types : sysData.surface_deposits;
             
-            const source = isSurface ? sysData.surface_deposits : sysData.asteroid_types;
-            if (!source) return { type: "GENERIC", sig: "SCAN" };
+            // 3. FAIL-SAFE: If the chosen source doesn't exist (like Nyx surface), flip to the other
+            const activeSource = source || (useAsteroid ? sysData.surface_deposits : sysData.asteroid_types);
+            if (!activeSource) return { type: "GENERIC", sig: "SCAN" };
 
             let bestType = null; let maxP = -1;
             const matKey = (material === "Quantainium") ? "Quantanium" : material;
 
-            for (let type in source) {
-                const p = source[type].probabilities ? source[type].probabilities[matKey] || 0 : 0;
+            for (let type in activeSource) {
+                const p = activeSource[type].probabilities ? activeSource[type].probabilities[matKey] || 0 : 0;
                 if (p > maxP) {
                     maxP = p;
-                    bestType = isSurface ? 
+                    // Check if the source is asteroid or surface to determine signature formatting
+                    const isNowSurface = activeSource === sysData.surface_deposits;
+                    bestType = isNowSurface ? 
                         { type: type, sig: `SHIP:4000 | HAND:3000` } : 
-                        { type: type, sig: source[type].sig || "4000" };
+                        { type: type, sig: activeSource[type].sig || "4000" };
                 }
             }
             return bestType || { type: "GENERIC", sig: "SCAN" };
@@ -135,7 +138,6 @@
 
                 let matches = [];
                 let totalWeight = 0;
-
                 picks.forEach(p => {
                     const locOres = oreData[locId].ores || oreData[locId];
                     const matKey = Object.keys(locOres).find(k => k.toUpperCase() === p.toUpperCase());
