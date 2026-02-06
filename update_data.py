@@ -10,12 +10,10 @@ VERIFIED_SIGS = {
     "PTYPE": 4750, "MTYPE": 4850, "QTYPE": 4870, "ETYPE": 4900
 }
 
-# We'll try 'name' and 'id' since 'dataName' was rejected
+# ONLY query the 'data' field since 'name', 'id', and 'location' are blocked
 QUERY = """
 query {
   scoutingFind {
-    name
-    id
     data
   }
 }
@@ -29,18 +27,12 @@ def sync():
     headers = {"x-api-key": TOKEN.strip(), "Content-Type": "application/json"}
     
     try:
-        print("Contacting Regolith API (Discovery Mode)...")
+        print("Attempting 'Blind Grab' of scoutingFind data...")
         response = requests.post(URL, headers=headers, json={"query": QUERY}, timeout=20)
         result = response.json()
 
         if "errors" in result:
             print(f"API ERROR: {result['errors'][0]['message']}")
-            print("Initiating Field Discovery...")
-            # If the query failed, ask the API what fields ScoutingFind actually has
-            discovery = "{ __type(name: \"ScoutingFind\") { fields { name } } }"
-            disc_resp = requests.post(URL, headers=headers, json={"query": discovery})
-            fields = [f['name'] for f in disc_resp.json().get('data', {}).get('__type', {}).get('fields', [])]
-            print(f"AVAILABLE FIELDS ON ScoutingFind: {', '.join(fields)}")
             return
 
         raw_entries = result.get("data", {}).get("scoutingFind", [])
@@ -48,28 +40,30 @@ def sync():
             print("!! FAIL: No data entries found !!")
             return
 
-        print(f"SUCCESS: Found {len(raw_entries)} entries. Processing...")
+        print(f"SUCCESS: Captured {len(raw_entries)} blobs. Unpacking...")
 
         ore_data = {}
         rock_data = {}
 
         for entry in raw_entries:
-            # Determine the location name from available fields
-            loc_name = entry.get("name") or entry.get("id") or "UNKNOWN"
+            # Unpack the scalar data
             content = entry.get("data", {})
-            
             if isinstance(content, str):
                 try: content = json.loads(content)
                 except: content = {}
 
-            # Process Ores
+            # IMPORTANT: We hunt for the name INSIDE the data object
+            # Common keys in Regolith's data blob are 'dataName', 'location', or 'id'
+            loc_name = content.get("dataName") or content.get("location") or content.get("id") or "UNKNOWN_LOC"
+            
+            # 1. Process Ores
             ore_list = content.get("ores", [])
             ore_data[loc_name] = {
                 "ores": {o["name"].capitalize(): o["prob"] for o in ore_list if "name" in o}
             }
 
-            # Process Rock Signatures
-            is_p = not any(k in loc_name.upper() for k in ['HALO', 'BELT', 'L1', 'L2', 'L3', 'L4', 'L5'])
+            # 2. Process Rock Signatures
+            is_p = not any(k in str(loc_name).upper() for k in ['HALO', 'BELT', 'L1', 'L2', 'L3', 'L4', 'L5'])
             rock_types = content.get("rockTypes", [])
             
             rock_data[loc_name] = {
@@ -82,7 +76,7 @@ def sync():
 
         with open("ore_locations.json", "w") as f: json.dump(ore_data, f, indent=2)
         with open("rock.json", "w") as f: json.dump(rock_data, f, indent=2)
-        print(f"Verification: Updated {len(ore_data)} locations.")
+        print(f"Verification: Successfully extracted {len(ore_data)} locations from blobs.")
 
     except Exception as e:
         print(f"!! CRITICAL ERROR: {str(e)} !!")
