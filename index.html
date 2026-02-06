@@ -19,14 +19,13 @@
         label { font-size: 10px; text-transform: uppercase; color: #665500; display: block; margin-bottom: 2px; letter-spacing: 1px; }
         #data-status { display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: bold; border-radius: 3px; background: #004400; color: #00FF00; border: 1px solid #00FF00; margin-bottom: 5px; }
         .loc-title { color: #fff; font-size: 15px; display: block; margin-bottom: 5px; }
-        .footer-note { font-size: 10px; color: #444; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="header">
         <div id="data-status">DATABASE: AUTO_SYNC_ACTIVE</div>
-        <h3>> MINING MATERIAL FINDER v1.0</h3>
-        <p style="font-size:12px; color:#666;">COMMUNITY SURVEY DATA UPDATED DAILY VIA REGOLITH API</p>
+        <h3>> INTEL_v37.2_FINAL_FIX</h3>
+        <p style="font-size:12px; color:#666;">COMMUNITY SURVEY DATA UPDATED DAILY</p>
     </div>
 
     <label>Region_Selection</label>
@@ -40,93 +39,24 @@
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
         <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
         <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
         <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
+        <option value="Taranite">TARANITE</option>
         <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
         <option value="Agricium">AGRICIUM</option>
         <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
-
-    <label>Priority_Resource_02</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
         <option value="Borase">BORASE</option>
         <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
-
-    <label>Priority_Resource_03</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
         <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
         <option value="Tungsten">TUNGSTEN</option>
         <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
         <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
+        <option value="Quartz">QUARTZ</option>
         <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
     </select>
 
-    <button onclick="scan()">Initiate Material Scan</button>
+    <button onclick="scan()">Initiate Triple Scan</button>
     <div id="results"></div>
-
-    <div class="footer-note">DATA SOURCE: REGOLITH SURVEY CORPS (SECURE API)</div>
 
     <script>
         let oreData, sysGroups, refMapping;
@@ -140,15 +70,16 @@
                     fetch(BASE_URL + 'reference.json', {cache: "no-store"}).then(r => r.json())
                 ]);
                 [oreData, sysGroups, refMapping] = configs;
+                console.log("Data Loaded Successfully");
             } catch (err) {
-                console.error("Link Failure", err);
+                console.error("Initialization failed:", err);
             }
         }
 
         function scan() {
             const out = document.getElementById('results');
             const system = document.getElementById('sys-select').value;
-            const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
+            const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value.toUpperCase()).filter(v => v);
 
             out.innerHTML = "";
             if (!oreData || !sysGroups) return;
@@ -156,30 +87,29 @@
             const activeGroup = sysGroups.star_system_groups[system] || [];
             const mapping = refMapping.location_mapping || {};
             const matches = [];
-            const normalize = (id) => id.replace(/[-_]/g, '').toUpperCase();
 
             for (let rawID in oreData) {
-                if (/^[A-Z]{3}-\d{3}$/.test(rawID)) continue;
-
-                const normRaw = normalize(rawID);
-                const isCorrectSystem = activeGroup.some(gID => normalize(gID) === normRaw);
+                // Check if location belongs to selected system
+                const isCorrectSystem = activeGroup.some(gID => gID.replace(/[-_]/g, '').toUpperCase() === rawID.replace(/[-_]/g, '').toUpperCase());
                 if (!isCorrectSystem) continue;
 
-                let displayName = mapping[rawID] || rawID;
                 let resultsForLoc = [];
                 let totalProb = 0;
+                const ores = oreData[rawID].ores || {};
 
                 picks.forEach(p => {
-                    const ores = oreData[rawID].ores || {};
-                    if (ores[p]) {
-                        const prob = ores[p].prob || 0;
-                        resultsForLoc.push({ name: p.toUpperCase(), val: (prob * 100).toFixed(1) });
+                    // NEW: Case-insensitive search inside the ore keys
+                    let matchKey = Object.keys(ores).find(k => k.toUpperCase() === p || k.toUpperCase().includes(p.substring(0,5)));
+                    
+                    if (matchKey) {
+                        const prob = ores[matchKey].prob || 0;
+                        resultsForLoc.push({ name: matchKey.toUpperCase(), val: (prob * 100).toFixed(1) });
                         totalProb += prob;
                     }
                 });
 
                 if (resultsForLoc.length > 0) {
-                    matches.push({ name: displayName, ores: resultsForLoc, sortVal: totalProb });
+                    matches.push({ name: mapping[rawID] || rawID, ores: resultsForLoc, sortVal: totalProb });
                 }
             }
 
@@ -195,10 +125,7 @@
                 });
             }
         }
-
         init();
     </script>
 </body>
 </html>
-
-
