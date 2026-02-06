@@ -1,199 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citizen Starter Guide - Mining Intel</title>
-    <style>
-        body { background:#000; color:#FFB300; font-family: monospace; padding:15px; }
-        .header { border-bottom:1px solid #332200; margin-bottom:20px; padding-bottom:10px; }
-        select, button { 
-            background:#111; color:#FFB300; border:1px solid #FFB300; 
-            padding:12px; margin-bottom:10px; width:100%; font-size: 16px;
-            border-radius:0; -webkit-appearance:none;
-        }
-        button { font-weight:bold; cursor:pointer; text-transform:uppercase; background:#1a1a1a; }
-        button:hover { background:#FFB300; color:#000; }
-        .card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-bottom:10px; background:#050505; }
-        .row { display: flex; justify-content: space-between; font-size: 14px; margin-top:5px; border-top: 1px solid #222; padding-top:5px; }
-        label { font-size: 10px; text-transform: uppercase; color: #665500; display: block; margin-bottom: 2px; }
-        #status { font-size:12px; color:#00FF00; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h3>> Material_Finder_v1.0</h3>
-        <p id="status">INITIATING DATA SYNC...</p>
-    </div>
+<script>
+    let oreData, sysGroups, refMapping;
+    const statusText = document.getElementById('status');
+    const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-    <label>System_Selection</label>
-    <select id="sys-select">
-        <option value="Stanton">STANTON_SYSTEM</option>
-        <option value="Pyro">PYRO_SYSTEM</option>
-        <option value="Nyx">NYX_SYSTEM</option>
-    </select>
+    const loadJson = (file) => fetch(BASE_URL + file, {cache: "no-store"})
+        .then(r => { if(!r.ok) throw new Error(file); return r.json(); });
 
-    <label>Target_Resource_Alpha</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantanium">QUANTANIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
+    Promise.all([
+        loadJson('ore_locations.json'),
+        loadJson('system_sorting.json'),
+        loadJson('reference.json')
+    ]).then(res => {
+        [oreData, sysGroups, refMapping] = res;
+        statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
+        statusText.style.color = "#00FF00";
+    }).catch(err => {
+        statusText.innerText = "SYNC_ERROR: UNABLE TO LOAD " + err.message.toUpperCase();
+        statusText.style.color = "red";
+    });
 
-    <label>Target_Resource_Beta</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantanium">QUANTANIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
+    function scan() {
+        const out = document.getElementById('results');
+        const system = document.getElementById('sys-select').value;
+        // Collects all 3 picks and filters out empty ones
+        const picks = Array.from(document.querySelectorAll('.ore-sel'))
+                           .map(s => s.value)
+                           .filter(v => v);
 
-    <label>Target_Resource_Gamma</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantanium">QUANTANIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
+        out.innerHTML = "";
+        if (!oreData || !sysGroups || !refMapping) return;
 
-    <button onclick="scan()">Execute Scan</button>
-    <div id="results"></div>
+        const activeGroup = sysGroups.star_system_groups[system] || [];
+        const validLocations = refMapping.location_mapping || {};
+        const matches = [];
 
-    <script>
-        let oreData, sysGroups, refMapping;
-        const statusText = document.getElementById('status');
-        const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
+        for (let loc in oreData) {
+            // Check if location is in the selected system group
+            if (!activeGroup.includes(loc)) continue;
+            // Check if location has a display name in reference.json
+            if (!validLocations[loc]) continue;
 
-        const loadJson = (file) => fetch(BASE_URL + file, {cache: "no-store"})
-            .then(r => { if(!r.ok) throw new Error(file); return r.json(); });
+            let foundOres = [];
+            let maxProb = 0;
 
-        Promise.all([
-            loadJson('ore_locations.json'),
-            loadJson('system_sorting.json'),
-            loadJson('reference.json')
-        ]).then(res => {
-            [oreData, sysGroups, refMapping] = res;
-            statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
-            statusText.style.color = "#00FF00";
-        }).catch(err => {
-            statusText.innerText = "SYNC_ERROR: UNABLE TO LOAD " + err.message.toUpperCase();
-            statusText.style.color = "red";
-        });
-
-        function scan() {
-            const out = document.getElementById('results');
-            const system = document.getElementById('sys-select').value;
-            const picks = Array.from(document.querySelectorAll('.ore-sel'))
-                               .map(s => s.value)
-                               .filter(v => v);
-
-            out.innerHTML = "";
-            if (!oreData || !sysGroups || !refMapping) return;
-
-            const matches = [];
-            const activeGroup = sysGroups.star_system_groups[system] || [];
-            const validLocations = refMapping.location_mapping || {};
-
-            for (let loc in oreData) {
-                if (!activeGroup.includes(loc)) continue;
-                if (!validLocations[loc]) continue;
-
-                let foundOres = [];
-                let maxProb = 0;
-
-                picks.forEach(p => {
-                    const locOres = oreData[loc].ores || {};
-                    const matchKey = Object.keys(locOres).find(k => k.toLowerCase() === p.toLowerCase());
-                    
-                    if (matchKey) {
-                        let prob = locOres[matchKey].prob || 0;
-                        foundOres.push({ name: matchKey.toUpperCase(), val: (prob * 100).toFixed(1) });
-                        if (prob > maxProb) maxProb = prob;
-                    }
-                });
-
-                if (foundOres.length > 0) {
-                    matches.push({ name: validLocations[loc], ores: foundOres, sortVal: maxProb });
+            picks.forEach(p => {
+                const locOres = oreData[loc].ores || {};
+                // Case-insensitive matching for materials
+                const matchKey = Object.keys(locOres).find(k => k.toLowerCase() === p.toLowerCase());
+                
+                if (matchKey) {
+                    let prob = locOres[matchKey].prob || 0;
+                    foundOres.push({ 
+                        name: matchKey.toUpperCase(), 
+                        val: (prob * 100).toFixed(1) 
+                    });
+                    if (prob > maxProb) maxProb = prob;
                 }
-            }
+            });
 
-            if (matches.length === 0) {
-                out.innerHTML = "<p style='color:#665500;'>NO VERIFIED DATA FOUND IN THIS REGION</p>";
-            } else {
-                matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
-                    const card = document.createElement('div');
-                    card.className = "card";
-                    let rows = m.ores.map(o => `<div class="row"><span>${o.name}</span><span>${o.val}%</span></div>`).join('');
-                    card.innerHTML = `<strong>${m.name}</strong>${rows}`;
-                    out.appendChild(card);
+            if (foundOres.length > 0) {
+                matches.push({ 
+                    name: validLocations[loc], 
+                    ores: foundOres, 
+                    sortVal: maxProb 
                 });
             }
         }
-    </script>
-</body>
-</html>
 
+        if (matches.length === 0) {
+            out.innerHTML = "<p style='color:#665500;'>NO VERIFIED DATA FOUND IN THIS REGION</p>";
+        } else {
+            // Sort by highest probability material found
+            matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
+                const card = document.createElement('div');
+                card.className = "card";
+                let rows = m.ores.map(o => `<div class="row"><span>${o.name}</span><span>${o.val}%</span></div>`).join('');
+                card.innerHTML = `<strong>${m.name}</strong>${rows}`;
+                out.appendChild(card);
+            });
+        }
+    }
+</script>
