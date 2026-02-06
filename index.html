@@ -23,7 +23,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v31.0_MASTER_SYNC</h3>
+        <h3>> INTEL_v32.0_FILTER_READY</h3>
         <p id="status">INITIATING DATA SYNC...</p>
     </div>
 
@@ -125,7 +125,7 @@
     <div id="results"></div>
 
     <script>
-        let oreData, sysGroups, refMapping;
+        let oreData, sysGroups, refMapping, filterList;
         const statusText = document.getElementById('status');
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
@@ -135,13 +135,14 @@
         Promise.all([
             loadJson('ore_locations.json'),
             loadJson('system_sorting.json'),
-            loadJson('reference.json')
+            loadJson('reference.json'),
+            loadJson('filter.json')
         ]).then(res => {
-            [oreData, sysGroups, refMapping] = res;
-            statusText.innerText = "ONLINE: MASTER SYNC COMPLETE";
+            [oreData, sysGroups, refMapping, filterList] = res;
+            statusText.innerText = "ONLINE: MASTER SYNC + FILTERS ACTIVE";
             statusText.style.color = "#00FF00";
         }).catch(err => {
-            statusText.innerText = "OFFLINE: " + err.message.toUpperCase();
+            statusText.innerText = "OFFLINE: FAILED TO FETCH DATA";
             statusText.style.color = "#FF4444";
         });
 
@@ -153,19 +154,25 @@
                                .filter(v => v);
 
             out.innerHTML = "";
-            if (!oreData || !sysGroups || !refMapping) return;
+            if (!oreData || !sysGroups || !refMapping || !filterList) return;
 
             const activeGroup = sysGroups.star_system_groups[system] || [];
             const mapping = refMapping.location_mapping || {};
+            const blacklist = filterList.blacklisted_ids || [];
             const matches = [];
 
             const normalize = (id) => id.replace(/[-_]/g, '').toUpperCase();
 
             for (let rawID in oreData) {
+                // Step 1: Check Blacklist
+                if (blacklist.includes(rawID)) continue;
+
+                // Step 2: System Filtering
                 const normRaw = normalize(rawID);
                 const isCorrectSystem = activeGroup.some(gID => normalize(gID) === normRaw);
                 if (!isCorrectSystem) continue;
 
+                // Step 3: Reference Mapping
                 let displayName = mapping[rawID];
                 if (!displayName) {
                     const mappedKey = Object.keys(mapping).find(k => normalize(k) === normRaw);
@@ -177,10 +184,8 @@
 
                 picks.forEach(p => {
                     const ores = oreData[rawID].ores || {};
-                    
-                    // SMART SPELLING BLOCK
                     let matchKey = Object.keys(ores).find(k => k.toLowerCase() === p.toLowerCase());
-                    // Fallback for common Quantainium vs Quantanium mismatch
+                    
                     if (!matchKey && p.toLowerCase().includes("quant")) {
                         matchKey = Object.keys(ores).find(k => k.toLowerCase().includes("quant"));
                     }
@@ -198,7 +203,7 @@
             }
 
             if (matches.length === 0) {
-                out.innerHTML = "<p style='color:#665500;'>NO RESULTS: VERIFY SYSTEM FILTERS</p>";
+                out.innerHTML = "<p style='color:#665500;'>NO VALID SIGNATURES DETECTED</p>";
             } else {
                 matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
                     const card = document.createElement('div');
