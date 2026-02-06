@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citizen Starter Guide - Mining HUD v51.1</title>
+    <title>Citizen Starter Guide - Mining HUD v51.3</title>
     <style>
         body { background:#000; color:#FFB300; font-family: monospace; padding:15px; }
         .header { border-bottom:1px solid #332200; margin-bottom:20px; }
         .status-pill { display: inline-block; padding: 2px 8px; font-size: 10px; border-radius: 3px; font-weight: bold; margin-bottom: 10px; }
         .live { background: #004400; color: #00FF00; border: 1px solid #00FF00; }
-        
         label { font-size: 10px; color: #665500; display: block; margin-top: 10px; }
         select, button { 
             background:#111; color:#FFB300; border:1px solid #FFB300; 
@@ -17,7 +16,6 @@
         }
         button { background: #1a1a1a; cursor: pointer; text-transform: uppercase; font-weight: bold; }
         button:hover { background: #FFB300; color: #000; }
-
         .card { border: 1px solid #332200; border-left: 4px solid #FFB300; padding: 12px; margin-bottom: 15px; background: #050505; }
         .loc-title { color: #fff; font-size: 15px; font-weight: bold; display: block; line-height: 1.4; }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 10px 0; border-bottom: 1px solid #111; }
@@ -28,8 +26,8 @@
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill live">HUD: MULTI_SYSTEM_V51.1_ACTIVE</div>
-        <h2 style="margin:0;">> MINING_INTEL_v51.1</h2>
+        <div id="data-status" class="status-pill live">HUD: NYX_BYPASS_v51.3</div>
+        <h2 style="margin:0;">> MINING_INTEL_v51.3</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -49,7 +47,6 @@
 
     <script>
         const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
-
         let oreData, sortingData, referenceData, filterData, probData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
@@ -61,40 +58,35 @@
         async function init() {
             try {
                 const [sRes, rRes, fRes, pRes, oRes] = await Promise.all([
-                    fetch(BASE_URL + 'system_sorting.json'),
-                    fetch(BASE_URL + 'reference.json'),
-                    fetch(BASE_URL + 'filter.json'),
-                    fetch(BASE_URL + 'probabilities.json'),
+                    fetch(BASE_URL + 'system_sorting.json'), fetch(BASE_URL + 'reference.json'),
+                    fetch(BASE_URL + 'filter.json'), fetch(BASE_URL + 'probabilities.json'),
                     fetch(BASE_URL + 'ore_locations.json')
                 ]);
-                sortingData = await sRes.json();
-                referenceData = await rRes.json();
-                filterData = await fRes.json();
-                probData = await pRes.json();
-                oreData = await oRes.json();
+                sortingData = await sRes.json(); referenceData = await rRes.json();
+                filterData = await fRes.json(); probData = await pRes.json(); oreData = await oRes.json();
             } catch (err) { document.getElementById('data-status').innerText = "HUD: SYNC_ERROR"; }
         }
 
-        function getBestHUD(material, system, isSurface) {
+        function getBestHUD(material, system, locId) {
             const sysData = probData[system];
             if (!sysData) return { type: "GENERIC", sig: "SCAN" };
 
-            let bestType = null;
-            let maxP = -1;
+            // THE NYX BYPASS: Force asteroid data for Nyx, check surface for others
+            const isNyx = system === "Nyx";
+            const isSurface = !isNyx && !locId.includes("HALO") && !locId.includes("CLUSTER") && !locId.startsWith("ST-") && !locId.startsWith("RAB-");
+            
             const source = isSurface ? sysData.surface_deposits : sysData.asteroid_types;
+            if (!source) return { type: "GENERIC", sig: "SCAN" };
 
+            let bestType = null; let maxP = -1;
             for (let type in source) {
-                // Normalization: Tool uses 'Quantainium', JSON often uses 'Quantanium'
                 const matKey = (material === "Quantainium") ? "Quantanium" : material;
-                const p = source[type].probabilities[matKey] || 0;
-                
+                const p = source[type].probabilities ? source[type].probabilities[matKey] || 0 : 0;
                 if (p > maxP) {
                     maxP = p;
-                    if (isSurface) {
-                        bestType = { type: type, sig: `SHIP:${source[type].ship_sig || 4000} | HAND:${source[type].hand_sig || 3000}` };
-                    } else {
-                        bestType = { type: type, sig: source[type].sig };
-                    }
+                    bestType = isSurface ? 
+                        { type: type, sig: `SHIP:${source[type].ship_sig} | HAND:${source[type].hand_sig}` } : 
+                        { type: type, sig: source[type].sig };
                 }
             }
             return bestType || { type: "GENERIC", sig: "SCAN" };
@@ -105,21 +97,18 @@
             const selectedSys = document.getElementById('sys-select').value;
             const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
             out.innerHTML = "";
-
             if (!oreData || !probData) return;
 
             const mapping = referenceData.location_mapping || {};
             const excluded = filterData.exclude_locations || [];
+            const nyxPrefixes = ["BGR-", "CAJ-", "DLO-", "EMM-", "FSN-", "GRP-", "HJS-", "JWY-", "KKE-", "LHB-", "MNK-", "NBD-", "RSC-", "WDH-", "YKA-"];
 
             for (let locId in oreData) {
                 if (excluded.includes(locId)) continue;
-
                 const locUp = locId.toUpperCase();
-                const mappedName = (mapping[locId] || "").toUpperCase();
-
-                // DUAL-LAYER NYX IDENTIFICATION
+                
                 let locSystem = "UNKNOWN";
-                if (locUp.includes("NYX") || locUp.includes("GLACIUM") || locUp.includes("DELAMAR") || mappedName.includes("NYX")) {
+                if (locUp.includes("NYX") || nyxPrefixes.some(p => locUp.startsWith(p))) {
                     locSystem = "Nyx";
                 } else {
                     for (let sys in (sortingData.star_system_groups || {})) {
@@ -131,41 +120,25 @@
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
-                // Environment detection
-                const isSurface = !locUp.includes("HALO") && !locUp.includes("BELT") && !locUp.startsWith("ST-") && !locUp.startsWith("RAB-") && !locUp.startsWith("BGR-") && !locUp.includes("CLUSTER");
-
                 let matches = [];
                 picks.forEach(p => {
                     const locOres = oreData[locId].ores || oreData[locId];
                     const matKey = Object.keys(locOres).find(k => k.toUpperCase() === p.toUpperCase());
-                    
                     if (matKey && locOres[matKey]) {
-                        const hud = getBestHUD(p, locSystem, isSurface);
+                        const hud = getBestHUD(p, locSystem, locId);
                         const probValue = locOres[matKey].prob !== undefined ? locOres[matKey].prob : locOres[matKey];
                         matches.push({ name: p.toUpperCase(), prob: (probValue * 100).toFixed(1), rock: hud.type, sig: hud.sig });
                     }
                 });
 
                 if (matches.length > 0) {
-                    const card = document.createElement('div');
-                    card.className = "card";
-                    let rows = matches.map(m => `
-                        <div class="row">
-                            <div style="display:flex; flex-direction:column;">
-                                <span style="font-weight:bold; color:#fff;">${m.name} <span class="sig-pill">${m.sig}</span></span>
-                                <span class="meta-text">HUNT: ${m.rock}</span>
-                            </div>
-                            <span class="prob">${m.prob}%</span>
-                        </div>
-                    `).join('');
-
-                    card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span class="loc-title">${(mapping[locId] || locId).toUpperCase()}</span>
-                            <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px;">${locSystem.toUpperCase()}</span>
-                        </div>
-                        ${rows}
-                    `;
+                    const card = document.createElement('div'); card.className = "card";
+                    card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span class="loc-title">${(mapping[locId] || locId).toUpperCase()}</span>
+                        <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px;">${locSystem.toUpperCase()}</span>
+                    </div>` + matches.map(m => `<div class="row"><div style="display:flex; flex-direction:column;">
+                        <span style="font-weight:bold; color:#fff;">${m.name} <span class="sig-pill">${m.sig}</span></span>
+                        <span class="meta-text">HUNT: ${m.rock}</span></div><span class="prob">${m.prob}%</span></div>`).join('');
                     out.appendChild(card);
                 }
             }
