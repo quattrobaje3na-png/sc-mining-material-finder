@@ -32,7 +32,7 @@
 <body>
     <div class="header">
         <div id="data-source-badge">SYNCING...</div>
-        <h3>> INTEL_v35.1_TRIPLE_SYNC</h3>
+        <h3>> INTEL_v35.2_PROXY_SYNC</h3>
         <p id="status-text">INITIALIZING QUANTUM LINK...</p>
     </div>
 
@@ -137,8 +137,10 @@
         let oreData, sysGroups, refMapping, filterList;
         const statusBadge = document.getElementById('data-source-badge');
         const statusText = document.getElementById('status-text');
+        
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
-        const REGOLITH_URL = 'https://regolith.rocks/api/export/survey/locations';
+        const REGOLITH_API = 'https://regolith.rocks/api/export/survey/locations';
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(REGOLITH_API);
 
         async function init() {
             try {
@@ -150,15 +152,17 @@
                 [sysGroups, refMapping, filterList] = configs;
 
                 try {
-                    const res = await fetch(REGOLITH_URL, {cache: "no-store"});
-                    if (!res.ok) throw new Error();
+                    const res = await fetch(PROXY_URL, {cache: "no-store"});
+                    if (!res.ok) throw new Error("Proxy Failure");
                     oreData = await res.json();
+                    
                     statusBadge.innerText = "DATA SOURCE: LIVE (REGOLITH)";
                     statusBadge.className = "status-live";
-                    statusText.innerText = "SUCCESS: STREAMING REAL-TIME INTEL";
+                    statusText.innerText = "SUCCESS: STREAMING REAL-TIME INTEL VIA PROXY";
                 } catch (apiErr) {
                     const fallback = await fetch(BASE_URL + 'ore_locations.json', {cache: "no-store"});
                     oreData = await fallback.json();
+                    
                     statusBadge.innerText = "DATA SOURCE: FALLBACK (GITHUB)";
                     statusBadge.className = "status-local";
                     statusText.innerText = "NOTICE: USING OFFLINE DATABASE BACKUP";
@@ -192,14 +196,10 @@
                 const isCorrectSystem = activeGroup.some(gID => normalize(gID) === normRaw);
                 if (!isCorrectSystem) continue;
 
-                let displayName = mapping[rawID];
-                if (!displayName) {
-                    const mappedKey = Object.keys(mapping).find(k => normalize(k) === normRaw);
-                    displayName = mapping[mappedKey] || rawID;
-                }
-
+                let displayName = mapping[rawID] || rawID;
                 let resultsForLoc = [];
                 let totalProb = 0;
+
                 picks.forEach(p => {
                     const ores = oreData[rawID].ores || {};
                     let matchKey = Object.keys(ores).find(k => k.toLowerCase() === p.toLowerCase());
