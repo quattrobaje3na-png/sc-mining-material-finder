@@ -20,16 +20,17 @@
         button:hover { background: #FFB300; color: #000; }
 
         .card { border: 1px solid #332200; border-left: 4px solid #FFB300; padding: 12px; margin-bottom: 10px; background: #050505; }
-        .loc-title { color: #fff; font-size: 15px; font-weight: bold; display: block; line-height: 1.4; }
+        .loc-title { color: #fff; font-size: 14px; font-weight: bold; display: block; line-height: 1.4; }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #111; }
         .prob { color: #00FF00; font-weight: bold; font-size: 18px; }
         .meta-text { font-size: 10px; color: #666; text-transform: uppercase; }
+        .unmapped { color: #ff0000; font-size: 9px; font-style: italic; }
     </style>
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill backup">SYNCING_BLOCKLIST_v49</div>
-        <h2 style="margin:0;">> MINING_INTEL_v49.2</h2>
+        <div id="data-status" class="status-pill backup">RE-SCANNING_ST_INDEX...</div>
+        <h2 style="margin:0;">> MINING_INTEL_v49.3</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -51,10 +52,8 @@
     <div id="results"></div>
 
     <script>
-        // Source of Truth for Dropdowns
         const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
-
-        // Unified Mining HUD Signatures
+        
         const ROCK_MAP = {
             "Quantainium": { type: "Q-Type", sig: 4870 },
             "Laranite": { type: "P/Q-Type", sig: "4750/4870" },
@@ -72,7 +71,6 @@
         let oreData, sortingData, referenceData, filterData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Immediately populate menus
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -95,15 +93,15 @@
                     if (!oRes.ok) throw new Error();
                     oreData = await oRes.json();
                     status.className = "status-pill live";
-                    status.innerText = "HUD: DATA_SYNC_COMPLETE";
+                    status.innerText = "HUD: FULL_DISCOVERY_ACTIVE";
                 } catch (e) {
                     const oRes = await fetch(BASE_URL + 'ore_locations.json');
                     oreData = await oRes.json();
                     status.className = "status-pill backup";
-                    status.innerText = "HUD: MASTER_BACKUP_ACTIVE";
+                    status.innerText = "HUD: MASTER_DISCOVERY_ACTIVE";
                 }
             } catch (err) {
-                status.innerText = "HUD: FILE_LOAD_ERROR";
+                status.innerText = "HUD: SYNC_ERROR";
             }
         }
 
@@ -115,19 +113,18 @@
             out.innerHTML = "";
             if (!oreData || !referenceData) return;
 
-            // Load Blocklists from filter.json
             const excludedLocs = filterData.exclude_locations || [];
-            const excludedMaterials = filterData.exclude_materials || [];
+            const mapping = referenceData.location_mapping || {};
 
             for (let locId in oreData) {
-                // 1. BLACKLIST FILTER: Skip if technical ID is blocked
                 if (excludedLocs.includes(locId)) continue;
 
-                // 2. REFERENCE NAME RESOLUTION: HUR -> Hurston (Planet)
-                const mapping = referenceData.location_mapping || {};
+                // NAME RESOLUTION: Use mapping, else show technical ID with red flag
+                const isMapped = mapping.hasOwnProperty(locId);
                 const displayName = mapping[locId] || locId;
+                const unmappedFlag = !isMapped && locId.startsWith('ST-') ? ' <span class="unmapped">[UNMAPPED CLUSTER]</span>' : '';
 
-                // 3. SYSTEM RESOLUTION
+                // SYSTEM RESOLUTION: 
                 let locSystem = "UNKNOWN";
                 if (sortingData && sortingData.star_system_groups) {
                     for (let sys in sortingData.star_system_groups) {
@@ -140,12 +137,8 @@
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
-                // 4. PROCESS MATERIAL RESULTS
                 let matches = [];
                 picks.forEach(p => {
-                    // Skip if material is in the blacklist
-                    if (excludedMaterials.includes(p)) return;
-
                     const locOres = oreData[locId].ores || oreData[locId];
                     const matKey = Object.keys(locOres).find(k => k.toUpperCase() === p.toUpperCase());
                     
@@ -177,7 +170,7 @@
 
                     card.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
-                            <span class="loc-title">${displayName.toUpperCase()}</span>
+                            <span class="loc-title">${displayName.toUpperCase()}${unmappedFlag}</span>
                             <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px;">${locSystem.toUpperCase()}</span>
                         </div>
                         ${rows}
