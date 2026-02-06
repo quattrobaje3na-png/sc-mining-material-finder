@@ -12,16 +12,17 @@
             padding:12px; margin-bottom:10px; width:100%; font-size: 16px;
             border-radius:0; -webkit-appearance:none;
         }
-        button { font-weight:bold; cursor:pointer; text-transform:uppercase; }
+        button { font-weight:bold; cursor:pointer; text-transform:uppercase; background:#1a1a1a; }
         button:hover { background:#FFB300; color:#000; }
         .card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-bottom:10px; background:#050505; }
         .row { display: flex; justify-content: space-between; font-size: 14px; margin-top:5px; border-top: 1px solid #222; padding-top:5px; }
+        label { font-size: 10px; text-transform: uppercase; color: #665500; display: block; margin-bottom: 2px; }
         #status { font-size:12px; color:#00FF00; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v29.9.6</h3>
+        <h3>> INTEL_v30.0_TRIPLE_SCAN</h3>
         <p id="status">INITIATING DATA SYNC...</p>
     </div>
 
@@ -32,69 +33,106 @@
         <option value="Nyx">NYX_SYSTEM</option>
     </select>
 
-    <label>TARGET_RESOURCES</label>
-    <select id="ore1">
-        <option value="">- SELECT MATERIAL 01 -</option>
+    <label>Target_Resource_Alpha</label>
+    <select class="ore-sel">
+        <option value="">- SELECT MATERIAL -</option>
         <option value="Quantanium">QUANTANIUM</option>
-        <option value="Gold">GOLD</option>
-        <option value="Bexalite">BEXALITE</option>
+        <option value="Stileron">STILERON</option>
+        <option value="Savrilium">SAVRILIUM</option>
+        <option value="Riccite">RICCITE</option>
         <option value="Taranite">TARANITE</option>
+        <option value="Lindinium">LINDINIUM</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Gold">GOLD</option>
         <option value="Laranite">LARANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Beryl">BERYL</option>
         <option value="Agricium">AGRICIUM</option>
         <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Diamond">DIAMOND</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Iron">IRON</option>
         <option value="Tungsten">TUNGSTEN</option>
-        <option value="Ammonia">AMMONIA</option>
+        <option value="Titanium">TITANIUM</option>
+        <option value="Silicon">SILICON</option>
+        <option value="Iron">IRON</option>
+        <option value="Quartz">QUARTZ</option>
+        <option value="Torite">TORITE</option>
+        <option value="Corundum">CORUNDUM</option>
+        <option value="Copper">COPPER</option>
+        <option value="Tin">TIN</option>
+        <option value="Aluminum">ALUMINUM</option>
+        <option value="Ice">ICE</option>
     </select>
 
-    <select id="ore2">
-        <option value="">- SELECT MATERIAL 02 -</option>
+    <label>Target_Resource_Beta</label>
+    <select class="ore-sel">
+        <option value="">- SELECT MATERIAL -</option>
         <option value="Quantanium">QUANTANIUM</option>
-        <option value="Gold">GOLD</option>
-        <option value="Bexalite">BEXALITE</option>
+        <option value="Stileron">STILERON</option>
+        <option value="Savrilium">SAVRILIUM</option>
+        <option value="Riccite">RICCITE</option>
         <option value="Taranite">TARANITE</option>
+        <option value="Lindinium">LINDINIUM</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Gold">GOLD</option>
         <option value="Laranite">LARANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Beryl">BERYL</option>
         <option value="Agricium">AGRICIUM</option>
         <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Diamond">DIAMOND</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Iron">IRON</option>
         <option value="Tungsten">TUNGSTEN</option>
-        <option value="Ammonia">AMMONIA</option>
+        <option value="Titanium">TITANIUM</option>
+        <option value="Silicon">SILICON</option>
+        <option value="Iron">IRON</option>
+        <option value="Quartz">QUARTZ</option>
+        <option value="Torite">TORITE</option>
+        <option value="Corundum">CORUNDUM</option>
+        <option value="Copper">COPPER</option>
+        <option value="Tin">TIN</option>
+        <option value="Aluminum">ALUMINUM</option>
+        <option value="Ice">ICE</option>
     </select>
 
-    <button onclick="scan()">Execute Strict Scan</button>
+    <label>Target_Resource_Gamma</label>
+    <select class="ore-sel">
+        <option value="">- SELECT MATERIAL -</option>
+        <option value="Quantanium">QUANTANIUM</option>
+        <option value="Stileron">STILERON</option>
+        <option value="Savrilium">SAVRILIUM</option>
+        <option value="Riccite">RICCITE</option>
+        <option value="Taranite">TARANITE</option>
+        <option value="Lindinium">LINDINIUM</option>
+        <option value="Bexalite">BEXALITE</option>
+        <option value="Gold">GOLD</option>
+        <option value="Laranite">LARANITE</option>
+        <option value="Borase">BORASE</option>
+        <option value="Beryl">BERYL</option>
+        <option value="Agricium">AGRICIUM</option>
+        <option value="Hephaestanite">HEPHAESTANITE</option>
+        <option value="Tungsten">TUNGSTEN</option>
+        <option value="Titanium">TITANIUM</option>
+        <option value="Silicon">SILICON</option>
+        <option value="Iron">IRON</option>
+        <option value="Quartz">QUARTZ</option>
+        <option value="Torite">TORITE</option>
+        <option value="Corundum">CORUNDUM</option>
+        <option value="Copper">COPPER</option>
+        <option value="Tin">TIN</option>
+        <option value="Aluminum">ALUMINUM</option>
+        <option value="Ice">ICE</option>
+    </select>
+
+    <button onclick="scan()">Execute Triple Scan</button>
     <div id="results"></div>
 
     <script>
         let oreData, sysGroups, refMapping;
         const statusText = document.getElementById('status');
-        
-        // Corrected BASE_URL
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
         const loadJson = (file) => fetch(BASE_URL + file, {cache: "no-store"})
-            .then(r => {
-                if(!r.ok) throw new Error(file);
-                return r.json();
-            });
+            .then(r => { if(!r.ok) throw new Error(file); return r.json(); });
 
         Promise.all([
-            loadJson('ore_locations.json'), // Fixed filename
+            loadJson('ore_locations.json'),
             loadJson('system_sorting.json'),
             loadJson('reference.json')
         ]).then(res => {
@@ -109,7 +147,9 @@
         function scan() {
             const out = document.getElementById('results');
             const system = document.getElementById('sys-select').value;
-            const picks = [document.getElementById('ore1').value, document.getElementById('ore2').value].filter(v => v);
+            const picks = Array.from(document.querySelectorAll('.ore-sel'))
+                               .map(s => s.value)
+                               .filter(v => v);
 
             out.innerHTML = "";
             if (!oreData || !sysGroups || !refMapping) return;
