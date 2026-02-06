@@ -28,8 +28,8 @@
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill backup">RE-LOADING_INTEL...</div>
-        <h2 style="margin:0;">> MINING_INTEL_v48.6</h2>
+        <div id="data-status" class="status-pill backup">DB: SYNCING...</div>
+        <h2 style="margin:0;">> MINING_INTEL_v48.8</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -41,11 +41,11 @@
     </select>
 
     <label>Material_Priority_01</label>
-    <select class="ore-sel" id="ore1"></select>
+    <select class="ore-sel"></select>
     <label>Material_Priority_02</label>
-    <select class="ore-sel" id="ore2"></select>
+    <select class="ore-sel"></select>
     <label>Material_Priority_03</label>
-    <select class="ore-sel" id="ore3"></select>
+    <select class="ore-sel"></select>
 
     <button onclick="scan()">Initiate Deep Scan</button>
     <div id="results"></div>
@@ -64,17 +64,13 @@
             "Borase": { type: "C-Type", sig: "4700" },
             "Tungsten": { type: "P-Type", sig: "4750" },
             "Copper": { type: "P-Type", sig: "4750" },
-            "Corundum": { type: "S-Type", sig: "4720" },
-            "Ammonia": { type: "I-Type", sig: "4000" },
-            "Quartz": { type: "C/P/Q-Type", sig: "4700/4750/4870" },
-            "Torite": { type: "M-Type", sig: "4850" },
-            "Aluminum": { type: "S/E-Type", sig: "4720/4900" }
+            "Quartz": { type: "C/P/Q-Type", sig: "4700-4870" }
         };
 
-        let oreData, sortingData;
+        let oreData, sortingData, referenceData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Immediate menu population
+        // Populate menus immediately
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -83,11 +79,15 @@
         async function init() {
             const status = document.getElementById('data-status');
             try {
-                // 1. Fetch Sorting File
-                const sRes = await fetch(BASE_URL + 'system_sorting.json');
+                // Fetch All Config Files
+                const [sRes, rRes] = await Promise.all([
+                    fetch(BASE_URL + 'system_sorting.json'),
+                    fetch(BASE_URL + 'reference.json')
+                ]);
                 sortingData = await sRes.json();
+                referenceData = await rRes.json();
 
-                // 2. Fetch Ore Data (Dual-Path)
+                // Fetch Ore Data (Live Priority)
                 try {
                     const oRes = await fetch(BASE_URL + 'ore_locations_live.json', { cache: "no-store" });
                     if (!oRes.ok) throw new Error();
@@ -101,7 +101,7 @@
                     status.innerText = "DB: MASTER_BACKUP_ACTIVE";
                 }
             } catch (err) {
-                status.innerText = "DB: CONNECTION_ERROR";
+                status.innerText = "DB: OFFLINE";
             }
         }
 
@@ -111,15 +111,18 @@
             const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
             
             out.innerHTML = "";
-            if (!oreData || !sortingData) return;
+            if (!oreData || !sortingData || !referenceData) return;
 
-            for (let loc in oreData) {
-                // SYSTEM MAPPING: Check if the location ID starts with any prefix from system_sorting.json
+            for (let locId in oreData) {
+                // 1. Resolve Display Name from reference.json
+                // Assumes reference.json is { "HUR": "Hurston", "LYR": "Lyria", ... }
+                let displayName = referenceData[locId] || locId;
+
+                // 2. Resolve System from system_sorting.json
                 let locSystem = "UNKNOWN";
                 if (sortingData.star_system_groups) {
                     for (let sys in sortingData.star_system_groups) {
-                        // Match full strings or prefixes (e.g. "ST-" prefix from the reference file)
-                        if (sortingData.star_system_groups[sys].some(id => loc.startsWith(id) || loc === id)) {
+                        if (sortingData.star_system_groups[sys].some(id => locId.startsWith(id))) {
                             locSystem = sys;
                             break;
                         }
@@ -128,9 +131,10 @@
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
+                // 3. Match Ores
                 let matches = [];
                 picks.forEach(p => {
-                    const locOres = oreData[loc].ores || oreData[loc];
+                    const locOres = oreData[locId].ores || oreData[locId];
                     const matKey = Object.keys(locOres).find(k => k.toUpperCase() === p.toUpperCase());
                     
                     if (matKey && locOres[matKey]) {
@@ -161,7 +165,7 @@
 
                     card.innerHTML = `
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span class="loc-title">${loc.toUpperCase()}</span>
+                            <span class="loc-title">${displayName.toUpperCase()}</span>
                             <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px;">${locSystem.toUpperCase()}</span>
                         </div>
                         ${rows}
