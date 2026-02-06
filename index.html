@@ -23,13 +23,13 @@
         .loc-title { color: #fff; font-size: 16px; font-weight: bold; display: block; }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #111; }
         .prob { color: #00FF00; font-weight: bold; font-size: 18px; }
-        .meta-text { font-size: 10px; color: #666; text-transform: uppercase; }
+        .meta-text { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill backup">DB: INITIALIZING</div>
-        <h2 style="margin:0;">> MINING_INTEL_v48.1</h2>
+        <div id="data-status" class="status-pill backup">INTEL_LOADING...</div>
+        <h2 style="margin:0;">> MINING_INTEL_v48.2</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -51,7 +51,7 @@
     <div id="results"></div>
 
     <script>
-        // Material-to-Rock Mapping for HUD display
+        // Data Mapping for HUD
         const ROCK_MAP = {
             "Quantainium": { type: "Q-Type", sig: 4870 },
             "Laranite": { type: "P/Q-Type", sig: "4750/4870" },
@@ -63,8 +63,7 @@
             "Titanium": { type: "E-Type", sig: 4900 },
             "Tungsten": { type: "P-Type", sig: 4750 },
             "Copper": { type: "P-Type", sig: 4750 },
-            "Quartz": { type: "C/P/Q-Type", sig: "4700-4870" },
-            "Bexalite": { type: "Multi-Type", sig: "4700+" }
+            "Quartz": { type: "C/P/Q-Type", sig: "4700-4870" }
         };
 
         const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
@@ -72,7 +71,7 @@
         let oreData, sortingData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Populate menus immediately
+        // Populate Dropdowns immediately
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -81,23 +80,20 @@
         async function init() {
             const status = document.getElementById('data-status');
             try {
+                // Fetch System Groups
                 const sRes = await fetch(BASE_URL + 'system_sorting.json');
                 sortingData = await sRes.json();
 
-                try {
-                    const oRes = await fetch(BASE_URL + 'ore_locations_live.json', { cache: "no-store" });
-                    if (!oRes.ok) throw new Error();
-                    oreData = await oRes.json();
-                    status.className = "status-pill live";
-                    status.innerText = "DB: LIVE_DATA_ACTIVE";
-                } catch (e) {
-                    const oRes = await fetch(BASE_URL + 'ore_locations.json');
-                    oreData = await oRes.json();
-                    status.className = "status-pill backup";
-                    status.innerText = "DB: MASTER_BACKUP_ACTIVE";
-                }
+                // Fetch Ore Data (Live Priority)
+                let oRes = await fetch(BASE_URL + 'ore_locations_live.json', { cache: "no-store" });
+                if (!oRes.ok) oRes = await fetch(BASE_URL + 'ore_locations.json');
+                
+                oreData = await oRes.json();
+                status.className = "status-pill live";
+                status.innerText = "DB: SYSTEMS_ONLINE";
             } catch (err) {
                 status.innerText = "DB: CONNECTION_ERROR";
+                console.error("Initialization Failed:", err);
             }
         }
 
@@ -107,11 +103,12 @@
             const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
             
             out.innerHTML = "";
-            if (!oreData || !sortingData) return;
+            if (!oreData) { console.error("Data not loaded"); return; }
 
             for (let loc in oreData) {
+                // Determine System
                 let locSystem = "Stanton"; 
-                if (sortingData.star_system_groups) {
+                if (sortingData && sortingData.star_system_groups) {
                     for (let sys in sortingData.star_system_groups) {
                         if (sortingData.star_system_groups[sys].includes(loc)) {
                             locSystem = sys;
@@ -124,12 +121,13 @@
 
                 let matches = [];
                 picks.forEach(p => {
-                    const locOres = oreData[loc].ores || {};
-                    if (locOres[p]) {
-                        const meta = ROCK_MAP[p] || { type: "Gen-Type", sig: "SCAN" };
+                    // Search in .ores OR directly in the object
+                    const dataObj = oreData[loc].ores || oreData[loc];
+                    if (dataObj[p]) {
+                        const meta = ROCK_MAP[p] || { type: "GENERIC", sig: "SCAN" };
                         matches.push({ 
                             name: p.toUpperCase(), 
-                            prob: (locOres[p] * 100).toFixed(1),
+                            prob: (dataObj[p] * 100).toFixed(1),
                             rock: meta.type,
                             sig: meta.sig
                         });
