@@ -23,7 +23,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v32.0_FILTER_READY</h3>
+        <h3>> INTEL_v33.1_STANTON_ONLY_FILTER</h3>
         <p id="status">INITIATING DATA SYNC...</p>
     </div>
 
@@ -64,62 +64,10 @@
     </select>
 
     <label>Priority_Resource_02</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
-
+    <select class="ore-sel"><option value="">- SELECT MATERIAL -</option><option value="Quantainium">QUANTAINIUM</option><option value="Stileron">STILERON</option><option value="Savrilium">SAVRILIUM</option><option value="Riccite">RICCITE</option><option value="Taranite">TARANITE</option><option value="Lindinium">LINDINIUM</option><option value="Bexalite">BEXALITE</option><option value="Gold">GOLD</option><option value="Laranite">LARANITE</option><option value="Borase">BORASE</option><option value="Beryl">BERYL</option><option value="Agricium">AGRICIUM</option><option value="Hephaestanite">HEPHAESTANITE</option><option value="Tungsten">TUNGSTEN</option><option value="Titanium">TITANIUM</option><option value="Silicon">SILICON</option><option value="Iron">IRON</option><option value="Quartz">QUARTZ</option><option value="Torite">TORITE</option><option value="Corundum">CORUNDUM</option><option value="Copper">COPPER</option><option value="Tin">TIN</option><option value="Aluminum">ALUMINUM</option><option value="Ice">ICE</option></select>
+    
     <label>Priority_Resource_03</label>
-    <select class="ore-sel">
-        <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
-    </select>
+    <select class="ore-sel"><option value="">- SELECT MATERIAL -</option><option value="Quantainium">QUANTAINIUM</option><option value="Stileron">STILERON</option><option value="Savrilium">SAVRILIUM</option><option value="Riccite">RICCITE</option><option value="Taranite">TARANITE</option><option value="Lindinium">LINDINIUM</option><option value="Bexalite">BEXALITE</option><option value="Gold">GOLD</option><option value="Laranite">LARANITE</option><option value="Borase">BORASE</option><option value="Beryl">BERYL</option><option value="Agricium">AGRICIUM</option><option value="Hephaestanite">HEPHAESTANITE</option><option value="Tungsten">TUNGSTEN</option><option value="Titanium">TITANIUM</option><option value="Silicon">SILICON</option><option value="Iron">IRON</option><option value="Quartz">QUARTZ</option><option value="Torite">TORITE</option><option value="Corundum">CORUNDUM</option><option value="Copper">COPPER</option><option value="Tin">TIN</option><option value="Aluminum">ALUMINUM</option><option value="Ice">ICE</option></select>
 
     <button onclick="scan()">Initiate Triple Scan</button>
     <div id="results"></div>
@@ -139,10 +87,10 @@
             loadJson('filter.json')
         ]).then(res => {
             [oreData, sysGroups, refMapping, filterList] = res;
-            statusText.innerText = "ONLINE: MASTER SYNC + FILTERS ACTIVE";
+            statusText.innerText = "ONLINE: STANTON CLUSTER FILTER ACTIVE";
             statusText.style.color = "#00FF00";
         }).catch(err => {
-            statusText.innerText = "OFFLINE: FAILED TO FETCH DATA";
+            statusText.innerText = "OFFLINE: DATABASE SYNC ERROR";
             statusText.style.color = "#FF4444";
         });
 
@@ -150,8 +98,7 @@
             const out = document.getElementById('results');
             const system = document.getElementById('sys-select').value;
             const picks = Array.from(document.querySelectorAll('.ore-sel'))
-                               .map(s => s.value)
-                               .filter(v => v);
+                               .map(s => s.value).filter(v => v);
 
             out.innerHTML = "";
             if (!oreData || !sysGroups || !refMapping || !filterList) return;
@@ -164,15 +111,17 @@
             const normalize = (id) => id.replace(/[-_]/g, '').toUpperCase();
 
             for (let rawID in oreData) {
-                // Step 1: Check Blacklist
+                // 1. Check manual blacklist
                 if (blacklist.includes(rawID)) continue;
 
-                // Step 2: System Filtering
+                // 2. SURGICAL FILTER: Matches XXX-000 (Stanton Halo)
+                // This specifically skips Stanton clusters but lets RMB- and RAB- through
+                if (/^[A-Z]{3}-\d{3}$/.test(rawID)) continue;
+
                 const normRaw = normalize(rawID);
                 const isCorrectSystem = activeGroup.some(gID => normalize(gID) === normRaw);
                 if (!isCorrectSystem) continue;
 
-                // Step 3: Reference Mapping
                 let displayName = mapping[rawID];
                 if (!displayName) {
                     const mappedKey = Object.keys(mapping).find(k => normalize(k) === normRaw);
@@ -185,11 +134,9 @@
                 picks.forEach(p => {
                     const ores = oreData[rawID].ores || {};
                     let matchKey = Object.keys(ores).find(k => k.toLowerCase() === p.toLowerCase());
-                    
                     if (!matchKey && p.toLowerCase().includes("quant")) {
                         matchKey = Object.keys(ores).find(k => k.toLowerCase().includes("quant"));
                     }
-                    
                     if (matchKey) {
                         const prob = ores[matchKey].prob || 0;
                         resultsForLoc.push({ name: matchKey.toUpperCase(), val: (prob * 100).toFixed(1) });
