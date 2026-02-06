@@ -20,7 +20,7 @@
         button:hover { background: #FFB300; color: #000; }
 
         .card { border: 1px solid #332200; border-left: 4px solid #FFB300; padding: 12px; margin-bottom: 10px; background: #050505; }
-        .loc-title { color: #fff; font-size: 16px; font-weight: bold; display: block; }
+        .loc-title { color: #fff; font-size: 15px; font-weight: bold; display: block; line-height: 1.4; }
         .row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding: 8px 0; border-bottom: 1px solid #111; }
         .prob { color: #00FF00; font-weight: bold; font-size: 18px; }
         .meta-text { font-size: 10px; color: #666; text-transform: uppercase; }
@@ -28,8 +28,8 @@
 </head>
 <body>
     <div class="header">
-        <div id="data-status" class="status-pill backup">INTEL_SYNC_REQUIRED</div>
-        <h2 style="margin:0;">> MINING_INTEL_v48.9</h2>
+        <div id="data-status" class="status-pill backup">SYNCING_MAP_v49</div>
+        <h2 style="margin:0;">> MINING_INTEL_v49.0</h2>
     </div>
 
     <label>Target_Star_System</label>
@@ -51,7 +51,7 @@
     <div id="results"></div>
 
     <script>
-        // HUD Data Mapping
+        // Material Hunting Data
         const ROCK_MAP = {
             "Quantainium": { type: "Q-Type", sig: 4870 },
             "Laranite": { type: "P/Q-Type", sig: "4750/4870" },
@@ -71,7 +71,7 @@
         let oreData, sortingData, referenceData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Immediate Dropdown Population
+        // Initialize Dropdowns
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -80,7 +80,6 @@
         async function init() {
             const status = document.getElementById('data-status');
             try {
-                // Fetch All Configuration Files
                 const [sRes, rRes] = await Promise.all([
                     fetch(BASE_URL + 'system_sorting.json'),
                     fetch(BASE_URL + 'reference.json')
@@ -88,21 +87,20 @@
                 sortingData = await sRes.json();
                 referenceData = await rRes.json();
 
-                // Load Ore Data
                 try {
                     const oRes = await fetch(BASE_URL + 'ore_locations_live.json', { cache: "no-store" });
                     if (!oRes.ok) throw new Error();
                     oreData = await oRes.json();
                     status.className = "status-pill live";
-                    status.innerText = "DB: LIVE_DATA_ACTIVE";
+                    status.innerText = "HUD: REFERENCE_MAPPING_ACTIVE";
                 } catch (e) {
                     const oRes = await fetch(BASE_URL + 'ore_locations.json');
                     oreData = await oRes.json();
                     status.className = "status-pill backup";
-                    status.innerText = "DB: MASTER_BACKUP_ACTIVE";
+                    status.innerText = "HUD: MASTER_REFERENCE_ACTIVE";
                 }
             } catch (err) {
-                status.innerText = "DB: OFFLINE";
+                status.innerText = "HUD: MAPPING_ERROR";
             }
         }
 
@@ -112,16 +110,16 @@
             const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
             
             out.innerHTML = "";
-            if (!oreData || !sortingData || !referenceData) return;
+            if (!oreData || !referenceData) return;
 
             for (let locId in oreData) {
-                // 1. APPLY NAME CORRECTION FROM REFERENCE.JSON
-                // This checks if 'HUR' has a mapping like 'HURSTON'
-                const displayLabel = referenceData[locId] || locId;
+                // 1. RESOLVE HUMAN-READABLE NAME (HUR -> Hurston (Planet))
+                const mapping = referenceData.location_mapping || {};
+                const displayName = mapping[locId] || locId;
 
-                // 2. Resolve System for Filtering
+                // 2. RESOLVE SYSTEM GROUPING
                 let locSystem = "UNKNOWN";
-                if (sortingData.star_system_groups) {
+                if (sortingData && sortingData.star_system_groups) {
                     for (let sys in sortingData.star_system_groups) {
                         if (sortingData.star_system_groups[sys].some(id => locId.startsWith(id))) {
                             locSystem = sys;
@@ -132,7 +130,7 @@
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
-                // 3. Process Ores
+                // 3. PROCESS ORE MATCHES
                 let matches = [];
                 picks.forEach(p => {
                     const locOres = oreData[locId].ores || oreData[locId];
@@ -165,9 +163,9 @@
                     `).join('');
 
                     card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <span class="loc-title">${displayLabel.toUpperCase()}</span>
-                            <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px;">${locSystem.toUpperCase()}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
+                            <span class="loc-title">${displayName.toUpperCase()}</span>
+                            <span style="font-size:9px; color:#554400; border:1px solid #332200; padding:1px 4px; white-space:nowrap;">${locSystem.toUpperCase()}</span>
                         </div>
                         ${rows}
                     `;
