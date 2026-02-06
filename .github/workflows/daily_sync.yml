@@ -2,14 +2,14 @@ name: Daily Regolith Sync
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs every day at midnight
-  workflow_dispatch:   # Allows you to click a button to run it manually
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Important: allows the bot to save files back to your repo
+      contents: write
     
     steps:
       - name: Checkout Repository
@@ -24,6 +24,8 @@ jobs:
         run: pip install requests
 
       - name: Run Update Script
+        env:
+          REGOLITH_TOKEN: ${{ secrets.REGOLITH_TOKEN }} # This injects your secret safely
         run: python update_data.py
 
       - name: Commit and Push changes
@@ -31,4 +33,4 @@ jobs:
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           git add ore_locations.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Automated data sync from Regolith" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Live Intel Update" && git push)
