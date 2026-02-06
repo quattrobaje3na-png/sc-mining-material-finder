@@ -20,13 +20,14 @@
         button:hover { background: #FFB300; color: #000; }
 
         .card { border: 1px solid #332200; border-left: 4px solid #FFB300; padding: 12px; margin-bottom: 10px; background: #050505; }
-        .row { display: flex; justify-content: space-between; font-size: 14px; padding: 3px 0; }
+        .row { display: flex; justify-content: space-between; font-size: 14px; padding: 3px 0; border-bottom: 1px solid #111; }
+        .prob-text { color: #00FF00; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="header">
         <div id="data-status" class="status-pill backup">INTEL_OFFLINE</div>
-        <h2 style="margin:0;">> MINING_INTEL_v46.0</h2>
+        <h2 style="margin:0;">> MINING_INTEL_v46.1</h2>
     </div>
 
     <label>Target_System</label>
@@ -37,51 +38,40 @@
         <option value="Nyx">NYX</option>
     </select>
 
-    <label>Priority_Material_01</label>
-    <select class="ore-sel" id="sel-1"></select>
-    <label>Priority_Material_02</label>
-    <select class="ore-sel" id="sel-2"></select>
-    <label>Priority_Material_03</label>
-    <select class="ore-sel" id="sel-3"></select>
+    <label>Material_Priority_01</label>
+    <select class="ore-sel"></select>
+    <label>Material_Priority_02</label>
+    <select class="ore-sel"></select>
+    <label>Material_Priority_03</label>
+    <select class="ore-sel"></select>
 
-    <button id="scan-btn" onclick="scan()">Initiate Scan</button>
+    <button id="scan-btn" onclick="scan()">Initiate Deep Scan</button>
     <div id="results"></div>
 
     <script>
-        // 1. HARD-CODED LIST: Dropdowns work NO MATTER WHAT
-        const MATERIALS = [
-            "Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", 
-            "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", 
-            "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", 
-            "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", 
-            "Torite", "Tungsten"
-        ];
-
         let oreData, sortingData;
         const RAW_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Populate dropdowns immediately on page load
-        function populateMenus() {
-            const dropdowns = document.querySelectorAll('.ore-sel');
-            dropdowns.forEach(sel => {
-                let html = '<option value="">- SELECT MATERIAL -</option>';
-                MATERIALS.sort().forEach(m => {
-                    html += `<option value="${m}">${m.toUpperCase()}</option>`;
-                });
-                sel.innerHTML = html;
-            });
-        }
-
         async function init() {
-            populateMenus(); // Menus are now independent
             const status = document.getElementById('data-status');
 
             try {
-                // Load sorting for results filtering
-                const sRes = await fetch(RAW_URL + 'system_sorting.json');
+                // 1. Fetch Configs (dropdowns are pre-populated from your filter.json manually or via hardcode)
+                const [fRes, sRes] = await Promise.all([
+                    fetch(RAW_URL + 'filter.json'),
+                    fetch(RAW_URL + 'system_sorting.json')
+                ]);
+                
+                const filterData = await fRes.json();
                 sortingData = await sRes.json();
 
-                // Load ore data
+                // Populate Dropdowns strictly from your provided filter.json
+                document.querySelectorAll('.ore-sel').forEach(s => {
+                    s.innerHTML = '<option value="">- SELECT MATERIAL -</option>' + 
+                        filterData.materials.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
+                });
+
+                // 2. Fetch Ore Data
                 let oRes = await fetch(RAW_URL + 'ore_locations_live.json', {cache: "no-store"});
                 if (!oRes.ok) oRes = await fetch(RAW_URL + 'ore_locations.json');
                 oreData = await oRes.json();
@@ -89,21 +79,23 @@
                 status.className = "status-pill live";
                 status.innerText = "DB: SYSTEMS_ONLINE";
             } catch (err) {
-                status.innerText = "DB: OFFLINE (BACKUP ACTIVE)";
+                status.innerText = "DB: CONFIG_ERROR";
             }
         }
 
         function scan() {
             const out = document.getElementById('results');
             const selectedSys = document.getElementById('sys-select').value;
-            const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value).filter(v => v);
+            const picks = Array.from(document.querySelectorAll('.ore-sel')).map(s => s.value.toLowerCase()).filter(v => v);
             
             out.innerHTML = "";
             if (!oreData) return;
 
+            let matchesFound = 0;
+
             for (let loc in oreData) {
-                // Use sortingData only for filtering results, not for the menu
-                let locSystem = "Stanton";
+                // System Filtering logic
+                let locSystem = "UNKNOWN";
                 if (sortingData && sortingData.star_system_groups) {
                     for (let sys in sortingData.star_system_groups) {
                         if (sortingData.star_system_groups[sys].includes(loc)) {
@@ -113,23 +105,41 @@
                     }
                 }
 
+                // Skip if doesn't match selected system (unless ALL is picked)
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
 
-                let matches = [];
+                let locResults = [];
+                const locOres = oreData[loc].ores || {};
+
+                // CASE-INSENSITIVE SEARCH
                 picks.forEach(p => {
-                    const locOres = oreData[loc].ores || {};
-                    if (locOres[p]) {
-                        matches.push({ name: p.toUpperCase(), prob: (locOres[p] * 100).toFixed(1) });
+                    // Find if the pick exists in the current location's ores (regardless of case)
+                    const dataKey = Object.keys(locOres).find(k => k.toLowerCase() === p);
+                    if (dataKey) {
+                        locResults.push({
+                            name: dataKey.toUpperCase(),
+                            prob: (locOres[dataKey] * 100).toFixed(1)
+                        });
                     }
                 });
 
-                if (matches.length > 0) {
+                if (locResults.length > 0) {
+                    matchesFound++;
                     const card = document.createElement('div');
                     card.className = "card";
-                    let rows = matches.map(m => `<div class="row"><span>${m.name}</span><span style="color:#00FF00">${m.prob}%</span></div>`).join('');
-                    card.innerHTML = `<strong style="color:#fff">${loc.toUpperCase()} [${locSystem.toUpperCase()}]</strong>${rows}`;
+                    let rows = locResults.map(r => `
+                        <div class="row">
+                            <span>${r.name}</span>
+                            <span class="prob-text">${r.prob}%</span>
+                        </div>
+                    `).join('');
+                    card.innerHTML = `<strong style="color:#fff;">${loc.toUpperCase()} [${locSystem}]</strong>${rows}`;
                     out.appendChild(card);
                 }
+            }
+
+            if (matchesFound === 0) {
+                out.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>NO SIGNATURES FOUND FOR SELECTION</p>";
             }
         }
 
