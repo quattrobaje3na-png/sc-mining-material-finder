@@ -32,7 +32,6 @@
     "CAL": "Calliope (microTech Moon)",
     "CLI": "Clio (microTech Moon)",
     "EUT": "Euterpe (microTech Moon)",
-    "GLACIUM": "microTech (Frozen Biomes)",
     "ST-7LI-0OA": "HDMS-Bezdek (Arial)",
     "ST-XJZ-JR2": "HDMS-Anderson (Aberdeen)",
     "ST-Q9Q-090": "HDMS-Norgaard (Aberdeen)",
@@ -42,6 +41,7 @@
     
     "DELAMAR": "Nyx - Delamar (Asteroid)",
     "LEVSKI": "Nyx - Levski (Landing Zone)",
+    "GLACIUM": "Nyx - Glacium (Icy Asteroid Belt)",
     "NYX_L1": "Nyx L1 - Independent Hub",
     "NYX_L2": "Nyx L2 - Independent Hub",
     "NYX_L3": "Nyx L3 - Independent Hub",
