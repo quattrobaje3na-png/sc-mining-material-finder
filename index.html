@@ -5,24 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizen Starter Guide - Mining Intel</title>
     <style>
-        body { background:#000; color:#FFB300; font-family: monospace; padding:15px; }
+        body { background:#000; color:#FFB300; font-family: monospace; padding:15px; line-height: 1.4; }
         .header { border-bottom:1px solid #332200; margin-bottom:20px; padding-bottom:10px; }
         select, button { 
             background:#111; color:#FFB300; border:1px solid #FFB300; 
             padding:12px; margin-bottom:10px; width:100%; font-size: 16px;
             border-radius:0; -webkit-appearance:none;
         }
-        button { font-weight:bold; cursor:pointer; text-transform:uppercase; background:#1a1a1a; }
+        button { font-weight:bold; cursor:pointer; text-transform:uppercase; background:#1a1a1a; transition: 0.2s; }
         button:hover { background:#FFB300; color:#000; }
         .card { border:1px solid #332200; border-left:4px solid #FFB300; padding:12px; margin-bottom:10px; background:#050505; }
         .row { display: flex; justify-content: space-between; font-size: 14px; margin-top:5px; border-top: 1px solid #222; padding-top:5px; }
-        label { font-size: 10px; text-transform: uppercase; color: #665500; display: block; margin-bottom: 2px; }
-        #status { font-size:12px; color:#00FF00; }
+        label { font-size: 10px; text-transform: uppercase; color: #665500; display: block; margin-bottom: 2px; letter-spacing: 1px; }
+        #status { font-size:12px; color:#00FF00; margin-bottom: 10px; }
+        .loc-title { color: #fff; font-size: 15px; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v30.6_CONSOLIDATED</h3>
+        <h3>> INTEL_v30.9_STRICT_SYNC</h3>
         <p id="status">INITIATING DATA SYNC...</p>
     </div>
 
@@ -33,7 +34,7 @@
         <option value="Nyx">NYX_SYSTEM</option>
     </select>
 
-    <label>Target_Resource_Alpha</label>
+    <label>Priority_Resource_01</label>
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
         <option value="Quantainium">QUANTAINIUM</option>
@@ -62,65 +63,19 @@
         <option value="Ice">ICE</option>
     </select>
 
-    <label>Target_Resource_Beta</label>
+    <label>Priority_Resource_02</label>
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
+        <option value="Quantainium">QUANTAINIUM</option><option value="Stileron">STILERON</option><option value="Savrilium">SAVRILIUM</option><option value="Riccite">RICCITE</option><option value="Taranite">TARANITE</option><option value="Lindinium">LINDINIUM</option><option value="Bexalite">BEXALITE</option><option value="Gold">GOLD</option><option value="Laranite">LARANITE</option><option value="Borase">BORASE</option><option value="Beryl">BERYL</option><option value="Agricium">AGRICIUM</option><option value="Hephaestanite">HEPHAESTANITE</option><option value="Tungsten">TUNGSTEN</option><option value="Titanium">TITANIUM</option><option value="Silicon">SILICON</option><option value="Iron">IRON</option><option value="Quartz">QUARTZ</option><option value="Torite">TORITE</option><option value="Corundum">CORUNDUM</option><option value="Copper">COPPER</option><option value="Tin">TIN</option><option value="Aluminum">ALUMINUM</option><option value="Ice">ICE</option>
     </select>
 
-    <label>Target_Resource_Gamma</label>
+    <label>Priority_Resource_03</label>
     <select class="ore-sel">
         <option value="">- SELECT MATERIAL -</option>
-        <option value="Quantainium">QUANTAINIUM</option>
-        <option value="Stileron">STILERON</option>
-        <option value="Savrilium">SAVRILIUM</option>
-        <option value="Riccite">RICCITE</option>
-        <option value="Taranite">TARANITE</option>
-        <option value="Lindinium">LINDINIUM</option>
-        <option value="Bexalite">BEXALITE</option>
-        <option value="Gold">GOLD</option>
-        <option value="Laranite">LARANITE</option>
-        <option value="Borase">BORASE</option>
-        <option value="Beryl">BERYL</option>
-        <option value="Agricium">AGRICIUM</option>
-        <option value="Hephaestanite">HEPHAESTANITE</option>
-        <option value="Tungsten">TUNGSTEN</option>
-        <option value="Titanium">TITANIUM</option>
-        <option value="Silicon">SILICON</option>
-        <option value="Iron">IRON</option>
-        <option value="Quartz">QUARTZ</option>
-        <option value="Torite">TORITE</option>
-        <option value="Corundum">CORUNDUM</option>
-        <option value="Copper">COPPER</option>
-        <option value="Tin">TIN</option>
-        <option value="Aluminum">ALUMINUM</option>
-        <option value="Ice">ICE</option>
+        <option value="Quantainium">QUANTAINIUM</option><option value="Stileron">STILERON</option><option value="Savrilium">SAVRILIUM</option><option value="Riccite">RICCITE</option><option value="Taranite">TARANITE</option><option value="Lindinium">LINDINIUM</option><option value="Bexalite">BEXALITE</option><option value="Gold">GOLD</option><option value="Laranite">LARANITE</option><option value="Borase">BORASE</option><option value="Beryl">BERYL</option><option value="Agricium">AGRICIUM</option><option value="Hephaestanite">HEPHAESTANITE</option><option value="Tungsten">TUNGSTEN</option><option value="Titanium">TITANIUM</option><option value="Silicon">SILICON</option><option value="Iron">IRON</option><option value="Quartz">QUARTZ</option><option value="Torite">TORITE</option><option value="Corundum">CORUNDUM</option><option value="Copper">COPPER</option><option value="Tin">TIN</option><option value="Aluminum">ALUMINUM</option><option value="Ice">ICE</option>
     </select>
 
-    <button onclick="scan()">Execute Triple Scan</button>
+    <button onclick="scan()">Initiate Triple Scan</button>
     <div id="results"></div>
 
     <script>
@@ -137,11 +92,11 @@
             loadJson('reference.json')
         ]).then(res => {
             [oreData, sysGroups, refMapping] = res;
-            statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
+            statusText.innerText = "ONLINE: DATABASE SYNCHRONIZED";
             statusText.style.color = "#00FF00";
         }).catch(err => {
-            statusText.innerText = "SYNC_ERROR: UNABLE TO LOAD " + err.message.toUpperCase();
-            statusText.style.color = "red";
+            statusText.innerText = "OFFLINE: FAILED TO FETCH " + err.message.toUpperCase();
+            statusText.style.color = "#FF4444";
         });
 
         function scan() {
@@ -152,62 +107,58 @@
                                .filter(v => v);
 
             out.innerHTML = "";
-            if (!oreData || !sysGroups || !refMapping) {
-                out.innerHTML = "<p style='color:red;'>ERROR: Data not loaded.</p>";
-                return;
-            }
+            if (!oreData || !sysGroups || !refMapping) return;
 
             const activeGroup = sysGroups.star_system_groups[system] || [];
-            const validLocations = refMapping.location_mapping || {};
+            const mapping = refMapping.location_mapping || {};
             const matches = [];
 
-            // Helper to clean up ID comparison
-            const normalize = (str) => str.replace(/[-_]/g, '').toUpperCase();
+            // Helper to handle technical ID naming variations
+            const normalize = (id) => id.replace(/[-_]/g, '').toUpperCase();
 
-            for (let loc in oreData) {
-                const normLoc = normalize(loc);
-                
-                // Security Check 1: Is the location ID allowed in this system?
-                const inGroup = activeGroup.some(g => normalize(g) === normLoc);
-                if (!inGroup) continue;
+            // Iterate over the immutable third-party data
+            for (let rawID in oreData) {
+                const normRaw = normalize(rawID);
 
-                // Security Check 2: Does the ID exist in the reference mapping for display?
-                // We check the original loc and then try a normalized lookup
-                let displayName = validLocations[loc];
-                if(!displayName) {
-                    const refKey = Object.keys(validLocations).find(k => normalize(k) === normLoc);
-                    displayName = validLocations[refKey];
+                // 1. Is this ID assigned to the selected system?
+                const isCorrectSystem = activeGroup.some(gID => normalize(gID) === normRaw);
+                if (!isCorrectSystem) continue;
+
+                // 2. Do we have a friendly name for this ID in our reference?
+                let displayName = mapping[rawID];
+                if (!displayName) {
+                    const mappedKey = Object.keys(mapping).find(k => normalize(k) === normRaw);
+                    displayName = mapping[mappedKey] || rawID;
                 }
-                
-                if (!displayName) continue;
 
-                let foundOres = [];
-                let maxProb = 0;
+                let resultsForLoc = [];
+                let totalProb = 0;
 
                 picks.forEach(p => {
-                    const locOres = oreData[loc].ores || {};
-                    const matchKey = Object.keys(locOres).find(k => k.toLowerCase() === p.toLowerCase());
+                    const ores = oreData[rawID].ores || {};
+                    // Find ore regardless of internal case sensitivity
+                    const oreKey = Object.keys(ores).find(k => k.toLowerCase() === p.toLowerCase());
                     
-                    if (matchKey) {
-                        let prob = locOres[matchKey].prob || 0;
-                        foundOres.push({ name: matchKey.toUpperCase(), val: (prob * 100).toFixed(1) });
-                        if (prob > maxProb) maxProb = prob;
+                    if (oreKey) {
+                        const prob = ores[oreKey].prob || 0;
+                        resultsForLoc.push({ name: oreKey, val: (prob * 100).toFixed(1) });
+                        totalProb += prob;
                     }
                 });
 
-                if (foundOres.length > 0) {
-                    matches.push({ name: displayName, ores: foundOres, sortVal: maxProb });
+                if (resultsForLoc.length > 0) {
+                    matches.push({ name: displayName, ores: resultsForLoc, sortVal: totalProb });
                 }
             }
 
             if (matches.length === 0) {
-                out.innerHTML = "<p style='color:#665500;'>NO VERIFIED DATA FOUND IN THIS REGION</p>";
+                out.innerHTML = "<p style='color:#665500;'>NO VALID SIGNATURES DETECTED IN REGION</p>";
             } else {
                 matches.sort((a, b) => b.sortVal - a.sortVal).forEach(m => {
                     const card = document.createElement('div');
                     card.className = "card";
-                    let rows = m.ores.map(o => `<div class="row"><span>${o.name}</span><span>${o.val}%</span></div>`).join('');
-                    card.innerHTML = `<strong>${m.name}</strong>${rows}`;
+                    let rows = m.ores.map(o => `<div class="row"><span>${o.name.toUpperCase()}</span><span>${o.val}%</span></div>`).join('');
+                    card.innerHTML = `<span class="loc-title"><strong>${m.name}</strong></span>${rows}`;
                     out.appendChild(card);
                 });
             }
