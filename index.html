@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="header">
-        <h3>> INTEL_v29.9.3</h3>
+        <h3>> INTEL_v29.9.6</h3>
         <p id="status">INITIATING DATA SYNC...</p>
     </div>
 
@@ -77,21 +77,26 @@
         <option value="Ammonia">AMMONIA</option>
     </select>
 
-    <button onclick="scan()">Execute Global Search</button>
+    <button onclick="scan()">Execute Strict Scan</button>
     <div id="results"></div>
 
     <script>
         let oreData, sysGroups, refMapping;
         const statusText = document.getElementById('status');
+        
+        // Corrected BASE_URL
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        const fetchWithErr = (name) => fetch(BASE_URL + name, {cache: "no-store"})
-            .then(r => { if(!r.ok) throw new Error(name); return r.json(); });
+        const loadJson = (file) => fetch(BASE_URL + file, {cache: "no-store"})
+            .then(r => {
+                if(!r.ok) throw new Error(file);
+                return r.json();
+            });
 
         Promise.all([
-            fetchWithErr('OreLocations.json'),
-            fetchWithErr('system_sorting.json'),
-            fetchWithErr('reference.json')
+            loadJson('ore_locations.json'), // Fixed filename
+            loadJson('system_sorting.json'),
+            loadJson('reference.json')
         ]).then(res => {
             [oreData, sysGroups, refMapping] = res;
             statusText.innerText = "READY: MULTI-STREAM SYNC COMPLETE";
