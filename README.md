@@ -40,9 +40,9 @@ Orbital Operations: Automatically triggers for Lagrange points, RMB/RAB bases, a
 
 Precision Signature Mapping: Never scan a rock blindly. The tool utilizes the latest 4.0 signature standards, allowing you to identify Q-Type, P-Type, M-Type, and specific materials based on their unique signal returns before you ever fire a mining laser.
 
-[!WARNING]
 
 🚨 DEVELOPMENT ALERT: "ALL SYSTEMS" DATA INTEGRITY > Using the "ALL SYSTEMS" filter currently introduces junk data and duplicate location IDs. For the most accurate intelligence and correct rock signatures, please select your specific target system (Stanton, Pyro, or Nyx) individually.
+
 
 🛠️ INSTALLATION & SETUP
 Clone the Repo: git clone https://github.com/quattrobaje3na-png/sc-mining-tool.git
