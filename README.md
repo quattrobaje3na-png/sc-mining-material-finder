@@ -21,10 +21,10 @@ I built this tool to be the most accessible mining interface in the community. Y
 
 3. Initiate Scan The tool instantly ranks every location, placing the spots with the combined largest percentages for those materials at the top of your list.
 
-[!WARNING]
 
 🚨 DEVELOPMENT ALERT: "ALL SYSTEMS" DATA INTEGRITY
 Using the "ALL SYSTEMS" filter currently introduces junk data and duplicate location IDs. For the most accurate intelligence and correct rock signatures, please select your specific target system (Stanton, Pyro, or Nyx) individually.
+
 
 🚀 ADVANCED HUD INTELLIGENCE
 While the interface is designed for simplicity, the backend is driven by a sophisticated logic engine specifically calibrated for the Star Citizen 4.0 ecosystem. It is built to be easily updated with new information from Regolith or other data sources.
