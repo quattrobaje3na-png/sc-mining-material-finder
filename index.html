@@ -109,8 +109,6 @@
 
             const mapping = referenceData.location_mapping || {};
             const excluded = filterData.exclude_locations || [];
-            
-            // Nyx cluster-specific prefixes to block
             const nyxClusterPrefixes = ["BGR-", "KKE-", "CAJ-", "DLO-", "EMM-"];
             const nyxPrefixes = [...nyxClusterPrefixes, "FSN-", "GRP-", "HJS-", "JWY-", "LHB-", "MNK-", "NBD-", "RSC-", "WDH-", "YKA-"];
             const pyroKeywords = ["PYR", "RAB-", "RMB-", "BLO-", "STA-", "KIR-", "MON-"];
@@ -122,6 +120,10 @@
                 const locUp = locId.toUpperCase();
                 const displayName = (mapping[locId] || locId).toUpperCase();
                 
+                // --- CLUSTER KILLER ---
+                // Skip any location that is identified as a cluster by name
+                if (displayName.startsWith("CLUSTER")) continue;
+
                 let locSystem = "UNKNOWN";
                 if (locUp.includes("NYX") || nyxPrefixes.some(p => locUp.startsWith(p))) {
                     locSystem = "Nyx";
@@ -133,12 +135,6 @@
                             locSystem = sys; break;
                         }
                     }
-                }
-
-                // NYX CLUSTER BLOCKER: Strictly exclude Glaciem Ring/Keeger Belt clusters from Nyx surface view
-                if (selectedSys === "Nyx") {
-                    const isCluster = locUp.includes("RING") || locUp.includes("BELT") || nyxClusterPrefixes.some(p => locUp.startsWith(p));
-                    if (isCluster) continue;
                 }
 
                 if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
