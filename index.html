@@ -47,10 +47,19 @@
     <div id="results"></div>
 
     <script>
-        const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
+        // FULL 4.6 MATERIAL LIST INCLUDING PYRO EXCLUSIVES
+        const MATERIALS = [
+            "Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", 
+            "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", 
+            "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", 
+            "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", 
+            "Titanium", "Torite", "Tungsten"
+        ];
+        
         let oreData, sortingData, referenceData, filterData, probData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
+        // Populate the 3 dropdowns
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -75,16 +84,12 @@
             const rawId = locId.toUpperCase();
             const name = displayName.toUpperCase();
             
-            // 1. SPACE KEYWORDS
             const spaceKeywords = ["BELT", "RING", "HALO", "CLUSTER", "RMB-", "RAB-", "BGR-", " L1", " L2", " L3", " L4", " L5", "-L1", "-L2", "-L3", "-L4", "-L5"];
             const isSpace = spaceKeywords.some(key => rawId.includes(key) || name.includes(key)) || rawId.startsWith("R0");
             const isHDMS = rawId.includes("HDMS") || name.includes("HDMS") || rawId.includes("HDSF");
 
-            // 2. PREFER ASTEROID FOR SPACE/NYX, OTHERWISE SURFACE
             const useAsteroid = (isSpace || system === "Nyx") && !isHDMS;
             const source = useAsteroid ? sysData.asteroid_types : sysData.surface_deposits;
-            
-            // 3. FAIL-SAFE: If the chosen source doesn't exist (like Nyx surface), flip to the other
             const activeSource = source || (useAsteroid ? sysData.surface_deposits : sysData.asteroid_types);
             if (!activeSource) return { type: "GENERIC", sig: "SCAN" };
 
@@ -95,7 +100,6 @@
                 const p = activeSource[type].probabilities ? activeSource[type].probabilities[matKey] || 0 : 0;
                 if (p > maxP) {
                     maxP = p;
-                    // Check if the source is asteroid or surface to determine signature formatting
                     const isNowSurface = activeSource === sysData.surface_deposits;
                     bestType = isNowSurface ? 
                         { type: type, sig: `SHIP:4000 | HAND:3000` } : 
@@ -140,7 +144,15 @@
                 let totalWeight = 0;
                 picks.forEach(p => {
                     const locOres = oreData[locId].ores || oreData[locId];
-                    const matKey = Object.keys(locOres).find(k => k.toUpperCase() === p.toUpperCase());
+                    
+                    // FIX: Handle "Quantainium" selection vs "Quantanium" data key
+                    let possibleKeys = [p];
+                    if (p === "Quantainium") possibleKeys.push("Quantanium");
+
+                    const matKey = Object.keys(locOres).find(k => 
+                        possibleKeys.some(pk => pk.toUpperCase() === k.toUpperCase())
+                    );
+
                     if (matKey && locOres[matKey]) {
                         const hud = getBestHUD(p, locSystem, locId, displayName);
                         const probValue = locOres[matKey].prob !== undefined ? locOres[matKey].prob : locOres[matKey];
@@ -171,6 +183,3 @@
     </script>
 </body>
 </html>
-
-
-
