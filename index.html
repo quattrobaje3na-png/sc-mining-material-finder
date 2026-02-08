@@ -47,19 +47,10 @@
     <div id="results"></div>
 
     <script>
-        // FULL 4.6 MATERIAL LIST INCLUDING PYRO EXCLUSIVES
-        const MATERIALS = [
-            "Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", 
-            "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", 
-            "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", 
-            "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", 
-            "Titanium", "Torite", "Tungsten"
-        ];
-        
+        const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
         let oreData, sortingData, referenceData, filterData, probData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
-        // Populate the 3 dropdowns
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT -</option>' + 
                 MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
@@ -94,6 +85,7 @@
             if (!activeSource) return { type: "GENERIC", sig: "SCAN" };
 
             let bestType = null; let maxP = -1;
+            // Bridge spelling for HUD logic
             const matKey = (material === "Quantainium") ? "Quantanium" : material;
 
             for (let type in activeSource) {
@@ -119,6 +111,7 @@
             const mapping = referenceData.location_mapping || {};
             const excluded = filterData.exclude_locations || [];
             const nyxPrefixes = ["BGR-", "CAJ-", "DLO-", "EMM-", "FSN-", "GRP-", "HJS-", "JWY-", "KKE-", "LHB-", "MNK-", "NBD-", "RSC-", "WDH-", "YKA-"];
+            const pyroKeywords = ["PYR", "RAB-", "RMB-", "BLO-", "STA-", "KIR-", "MON-"];
 
             let resultsArray = [];
 
@@ -130,6 +123,8 @@
                 let locSystem = "UNKNOWN";
                 if (locUp.includes("NYX") || nyxPrefixes.some(p => locUp.startsWith(p))) {
                     locSystem = "Nyx";
+                } else if (pyroKeywords.some(p => locUp.includes(p))) {
+                    locSystem = "Pyro";
                 } else {
                     for (let sys in (sortingData.star_system_groups || {})) {
                         if (sortingData.star_system_groups[sys].some(id => locId.startsWith(id))) {
@@ -145,7 +140,7 @@
                 picks.forEach(p => {
                     const locOres = oreData[locId].ores || oreData[locId];
                     
-                    // FIX: Handle "Quantainium" selection vs "Quantanium" data key
+                    // Normalization bridge for "Quantainium" selection vs "Quantanium" data
                     let possibleKeys = [p];
                     if (p === "Quantainium") possibleKeys.push("Quantanium");
 
