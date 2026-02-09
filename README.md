@@ -1,4 +1,9 @@
-<img src="https://i.imgur.com/uC0XmX7.png" alt="SC Mining Material Finder Logo" width="600">
+<div align="center">
+  <img src="https://i.imgur.com/Kx28qS3.png" alt="SC Mining Material Finder Logo" width="500">
+  
+  # SC Mining Material Finder
+  **The ultimate 4.6 intel tool for the elite miner.**
+</div>
 
 The Mining Material Finder is a streamlined tool built for Star Citizen 4.6 and beyond geared towards beginners and people wanting simplicity. It eliminates spreadsheet hunting so you can mine more effectively and currently clear Alliance Aid: Clearing the Air missions faster.
 
