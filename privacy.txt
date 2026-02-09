@@ -1,0 +1,22 @@
+Privacy Policy: SC Mining Material Finder
+
+1. Overview
+The SC Mining Material Finder (the "App") is built with user privacy as a top priority. This policy outlines how we handle (or rather, don't handle) your data while you use our mining HUD services.
+
+2. Data Collection
+- No Personal Data: We do not collect, store, or share any personal information. This includes your Discord username, ID, email address, or IP address.
+- No Message Logging: The App does not read or store your private messages. It only responds to specific Slash Commands (e.g., /mine) that you explicitly trigger.
+- No Database Storage: We do not maintain a database of user profiles or search histories. Every scan is processed "in the moment" and then discarded.
+
+3. Data Usage
+Because we do not collect data, we do not have data to sell, trade, or use for advertising. The only data processed is the Material and System parameters you enter into the command to generate your mining results.
+
+4. Third-Party Services
+- Discord: As a Discord bot, your interactions are subject to the Discord Privacy Policy.
+- GitHub: Our mining data is hosted on GitHub. When the bot fetches current mining yields, it does so via public GitHub URLs. No user-identifiable data is sent to GitHub during this process.
+
+5. Security
+Even though we don't store data, we protect the bot's integrity by hosting it on secure server environments and keeping the Bot Token confidential via environment variables.
+
+6. Contact
+If you have questions regarding this policy, please contact the developer through the official Support Server linked in the App's Discord profile.
