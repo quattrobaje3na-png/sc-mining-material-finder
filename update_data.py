@@ -5,11 +5,12 @@ import os
 URL = "https://api.regolith.rocks"
 TOKEN = os.environ.get("REGOLITH_TOKEN")
 
-# Reverting to scoutingFind as the collection name, which contains the SurveyData blobs
+# Corrected Query: 'dataName' is not a valid field on the ScoutingFind type.
+# We use 'id' as the primary identifier for the location.
 QUERY = """
 query {
   scoutingFind {
-    dataName
+    id
     epoch
     data
   }
@@ -18,7 +19,7 @@ query {
 
 def sync():
     if not TOKEN:
-        print("!! CRITICAL: REGOLITH_TOKEN secret missing !!")
+        print("!! CRITICAL: REGOLITH_TOKEN secret missing in GitHub Settings !!")
         return
 
     headers = {
@@ -27,8 +28,10 @@ def sync():
     }
     
     try:
-        print("Fetching Epoch 4.4 Data from Scouting Collection...")
+        print("Connecting to Regolith API for Epoch 4.4 Survey distributions...")
         response = requests.post(URL, json={"query": QUERY}, headers=headers, timeout=20)
+        
+        # Raise an exception for HTTP errors (401, 403, 500, etc.)
         response.raise_for_status()
         result = response.json()
 
@@ -36,34 +39,40 @@ def sync():
             print(f"API ERROR: {result['errors'][0]['message']}")
             return
 
-        # Regolith stores survey distributions within the scoutingFind array
         raw_entries = result.get("data", {}).get("scoutingFind", [])
-        
+        if not raw_entries:
+            print("!! CONNECTION SUCCESSFUL, BUT NO DATA FOUND !!")
+            return
+
+        # Filtering for the current Nyx epoch (4.4)
         target_epoch = "4.4"
         ore_output = {}
 
         for entry in raw_entries:
-            # Filter specifically for the current Nyx epoch
+            # Skip entries from older or irrelevant epochs
             if str(entry.get("epoch")) != target_epoch:
                 continue
 
-            loc_name = entry.get("dataName") or "UNKNOWN_LOC"
-            content = entry.get("data", {})
+            # 'id' now serves as the location name (e.g., 'Lyria', 'Wala', 'Hades-II')
+            loc_name = entry.get("id") or "UNKNOWN_LOC"
             
+            # The 'data' field contains the distribution blob
+            content = entry.get("data", {})
             if isinstance(content, str):
                 try: 
                     content = json.loads(content)
                 except json.JSONDecodeError: 
                     content = {}
 
+            # Map the Ores (including new Nyx ores like Savrilium and Torite)
             ores = content.get("ores", [])
             if ores:
-                # Format for the Mining Material Finder UI
                 ore_output[loc_name] = {
                     "ores": {o["name"].capitalize(): o["prob"] for o in ores if "name" in o},
                     "epoch": target_epoch
                 }
 
+        # Save to rock_live.json for the Mining Material Finder
         with open("rock_live.json", "w") as f:
             json.dump(ore_output, f, indent=2)
             
