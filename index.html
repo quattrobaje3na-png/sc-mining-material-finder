@@ -32,7 +32,6 @@
 
     <label>Target_System</label>
     <select id="sys-select">
-        <option value="ALL">ALL_SYSTEMS</option>
         <option value="Stanton">STANTON</option>
         <option value="Pyro">PYRO</option>
         <option value="Nyx">NYX</option>
@@ -120,8 +119,6 @@
                 const locUp = locId.toUpperCase();
                 const displayName = (mapping[locId] || locId).toUpperCase();
                 
-                // --- CLUSTER KILLER ---
-                // Skip any location that is identified as a cluster by name
                 if (displayName.startsWith("CLUSTER")) continue;
 
                 let locSystem = "UNKNOWN";
@@ -137,7 +134,8 @@
                     }
                 }
 
-                if (selectedSys !== "ALL" && selectedSys !== locSystem) continue;
+                // Updated logic: removed selectedSys !== "ALL" check
+                if (selectedSys !== locSystem) continue;
 
                 let matches = [];
                 let totalWeight = 0;
@@ -180,4 +178,3 @@
     </script>
 </body>
 </html>
-
