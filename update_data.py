@@ -5,11 +5,12 @@ import os
 URL = "https://api.regolith.rocks"
 TOKEN = os.environ.get("REGOLITH_TOKEN")
 
-# Target Query: Just scoutingFind and the data blob
+# Target Query: Pulling SurveyData for the current epoch
 QUERY = """
 query {
-  scoutingFind {
+  surveyFind {
     dataName
+    epoch
     data
   }
 }
@@ -20,50 +21,53 @@ def sync():
         print("!! CRITICAL: REGOLITH_TOKEN secret missing in GitHub Settings !!")
         return
 
-    headers = {"x-api-key": TOKEN.strip(), "Content-Type": "application/json"}
+    headers = {
+        "x-api-key": TOKEN.strip(),
+        "Content-Type": "application/json"
+    }
     
     try:
-        print("Authenticating with Regolith...")
-        response = requests.post(URL, headers=headers, json={"query": QUERY}, timeout=20)
+        print("Fetching Epoch 4.4 Survey Data...")
+        response = requests.post(URL, json={"query": QUERY}, headers=headers, timeout=20)
+        response.raise_for_status()
         result = response.json()
 
         if "errors" in result:
             print(f"API ERROR: {result['errors'][0]['message']}")
             return
 
-        raw_entries = result.get("data", {}).get("scoutingFind", [])
-        if not raw_entries:
-            print("!! SUCCESSFUL CONNECTION, BUT NO DATA FOUND !!")
-            return
-
-        print(f"SUCCESS: Captured {len(raw_entries)} locations. Processing Ores...")
-
+        raw_entries = result.get("data", {}).get("surveyFind", [])
+        
+        # Filtering for the current epoch (4.4)
+        target_epoch = "4.4"
         ore_output = {}
 
         for entry in raw_entries:
-            # Unpack the JSON blob inside 'data'
+            if str(entry.get("epoch")) != target_epoch:
+                continue
+
+            loc_name = entry.get("dataName") or "UNKNOWN_LOC"
             content = entry.get("data", {})
+            
             if isinstance(content, str):
                 try: 
                     content = json.loads(content)
-                except: 
+                except json.JSONDecodeError: 
                     content = {}
 
-            # Use dataName as the primary key (e.g., 'Lyria', 'Wala')
-            loc_name = entry.get("dataName") or "UNKNOWN_LOC"
-            
-            # Extract Ores only
             ores = content.get("ores", [])
             if ores:
+                # Capitalizing names for the UI (e.g., 'Laranite', 'Savrilium')
                 ore_output[loc_name] = {
-                    "ores": {o["name"].capitalize(): o["prob"] for o in ores if "name" in o}
+                    "ores": {o["name"].capitalize(): o["prob"] for o in ores if "name" in o},
+                    "epoch": target_epoch
                 }
 
-        # Save specifically to ore_locations.json
-        with open("ore_locations.json", "w") as f:
+        # Saving specifically to rock_live.json as requested
+        with open("rock_live.json", "w") as f:
             json.dump(ore_output, f, indent=2)
             
-        print(f"DONE: Updated {len(ore_output)} entries in ore_locations.json.")
+        print(f"SUCCESS: Updated rock_live.json with {len(ore_output)} locations.")
 
     except Exception as e:
         print(f"!! FATAL ERROR: {str(e)} !!")
