@@ -5,10 +5,10 @@ import os
 URL = "https://api.regolith.rocks"
 TOKEN = os.environ.get("REGOLITH_TOKEN")
 
-# Target Query: Pulling SurveyData for the current epoch
+# Reverting to scoutingFind as the collection name, which contains the SurveyData blobs
 QUERY = """
 query {
-  surveyFind {
+  scoutingFind {
     dataName
     epoch
     data
@@ -18,7 +18,7 @@ query {
 
 def sync():
     if not TOKEN:
-        print("!! CRITICAL: REGOLITH_TOKEN secret missing in GitHub Settings !!")
+        print("!! CRITICAL: REGOLITH_TOKEN secret missing !!")
         return
 
     headers = {
@@ -27,7 +27,7 @@ def sync():
     }
     
     try:
-        print("Fetching Epoch 4.4 Survey Data...")
+        print("Fetching Epoch 4.4 Data from Scouting Collection...")
         response = requests.post(URL, json={"query": QUERY}, headers=headers, timeout=20)
         response.raise_for_status()
         result = response.json()
@@ -36,13 +36,14 @@ def sync():
             print(f"API ERROR: {result['errors'][0]['message']}")
             return
 
-        raw_entries = result.get("data", {}).get("surveyFind", [])
+        # Regolith stores survey distributions within the scoutingFind array
+        raw_entries = result.get("data", {}).get("scoutingFind", [])
         
-        # Filtering for the current epoch (4.4)
         target_epoch = "4.4"
         ore_output = {}
 
         for entry in raw_entries:
+            # Filter specifically for the current Nyx epoch
             if str(entry.get("epoch")) != target_epoch:
                 continue
 
@@ -57,17 +58,16 @@ def sync():
 
             ores = content.get("ores", [])
             if ores:
-                # Capitalizing names for the UI (e.g., 'Laranite', 'Savrilium')
+                # Format for the Mining Material Finder UI
                 ore_output[loc_name] = {
                     "ores": {o["name"].capitalize(): o["prob"] for o in ores if "name" in o},
                     "epoch": target_epoch
                 }
 
-        # Saving specifically to rock_live.json as requested
         with open("rock_live.json", "w") as f:
             json.dump(ore_output, f, indent=2)
             
-        print(f"SUCCESS: Updated rock_live.json with {len(ore_output)} locations.")
+        print(f"SUCCESS: Updated rock_live.json with {len(ore_output)} locations for 4.4.")
 
     except Exception as e:
         print(f"!! FATAL ERROR: {str(e)} !!")
