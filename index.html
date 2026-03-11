@@ -57,13 +57,22 @@
     <div id="results"></div>
 
     <script>
-        const MATERIALS = ["Agricium", "Aluminum", "Ammonia", "Beryl", "Bexalite", "Borase", "Copper", "Corundum", "Gold", "Hephaestanite", "Ice", "Iron", "Laranite", "Lindinium", "Quantainium", "Quartz", "Riccite", "Savrilium", "Silicon", "Stileron", "Taranite", "Tin", "Titanium", "Torite", "Tungsten"];
+        const SIGNATURE_MAP = {
+            "Quantainium": 3170, "Stileron": 3185, "Savrilium": 3200, "Ouratite": 3370, 
+            "Riccite": 3385, "Lindinium": 3400, "Beryl": 3540, "Taranite": 3555, 
+            "Borase": 3570, "Gold": 3585, "Bexalite": 3600, "Laranite": 3825, 
+            "Aslarite": 3840, "Titanium": 3855, "Tungsten": 3870, "Agricium": 3885, 
+            "Torite": 3900, "Hephestanite": 4180, "Tin": 4195, "Quartz": 4210, 
+            "Corundum": 4225, "Copper": 4240, "Silicon": 4255, "Iron": 4270, 
+            "Aluminium": 4285, "Ice": 4300
+        };
+        const MATERIALS = Object.keys(SIGNATURE_MAP).sort();
         let oreData, sortingData, referenceData, filterData, probData;
         const BASE_URL = 'https://raw.githubusercontent.com/quattrobaje3na-png/sc-mining-tool/main/';
 
         document.querySelectorAll('.ore-sel').forEach(s => {
             s.innerHTML = '<option value="">- SELECT -</option>' + 
-                MATERIALS.sort().map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
+                MATERIALS.map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
         });
 
         async function init() {
@@ -96,15 +105,17 @@
 
             let bestType = null; let maxP = -1;
             const matKey = (material === "Quantainium") ? "Quantanium" : material;
+            const baseSig = SIGNATURE_MAP[material] || "SCAN";
 
             for (let type in activeSource) {
                 const p = activeSource[type].probabilities ? activeSource[type].probabilities[matKey] || 0 : 0;
                 if (p > maxP) {
                     maxP = p;
                     const isNowSurface = activeSource === sysData.surface_deposits;
-                    bestType = isNowSurface ? 
-                        { type: type, sig: `SHIP:4000 | HAND:3000` } : 
-                        { type: type, sig: activeSource[type].sig || "4000" };
+                    bestType = { 
+                        type: type, 
+                        sig: isNowSurface ? `SHIP:${baseSig} | HAND:3000` : `SHIP:${baseSig}` 
+                    };
                 }
             }
             return bestType || { type: "GENERIC", sig: "SCAN" };
@@ -145,7 +156,6 @@
                     }
                 }
 
-                // Updated logic: removed selectedSys !== "ALL" check
                 if (selectedSys !== locSystem) continue;
 
                 let matches = [];
@@ -189,5 +199,3 @@
     </script>
 </body>
 </html>
-
-
